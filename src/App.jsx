@@ -1,13 +1,14 @@
-import React from 'react';
-import Module1View from './features/chatbot/Module1View';
-import './App.css'; // You can keep global styles if needed, or clear App.css
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AlertDashboard } from './features/alerts/AlertDashboard.jsx';
 
 function App() {
   return (
-    <div className="app-container">
-      {/* Since you want to test the chatbot module exclusively, we render it directly here */}
-      <Module1View />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/alerts" element={<AlertDashboard />} />
+        <Route path="*" element={<Navigate to="/alerts" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

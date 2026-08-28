@@ -26,6 +26,9 @@ export function fetchAlerts(params = {}) {
 export function fetchAlert(id) {
   return request(`/alerts/${id}`);
 }
+export function fetchAlertHistory(id) {
+  return request(`/alerts/${id}/history`);
+}
 export function fetchSync(sinceRevision, etag, options = {}) {
   const headers = {};
   if (etag) headers['If-None-Match'] = etag;

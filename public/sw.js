@@ -139,7 +139,7 @@ async function handlePush(event) {
       alertId,
       severity,
       area,
-      url: alertId ? `/alerts/${alertId}` : '/',
+      url: alertId ? `/#/alerts/${alertId}` : '/',
     },
     // Vibration pattern for mobile: 200ms on, 100ms off, 200ms on
     vibrate: [200, 100, 200],

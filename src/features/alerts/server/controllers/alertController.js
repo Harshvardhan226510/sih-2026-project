@@ -29,6 +29,11 @@ export function getAlert(req, res) {
   res.set('ETag', etag);
   res.json(alert);
 }
+export function getAlertHistory(req, res) {
+  const history = repo.getAlertHistory(req.params.id);
+  if (!history || history.length === 0) return res.status(404).json({ error: 'Alert not found or no history' });
+  res.json(history);
+}
 export async function syncAlerts(req, res) {
   const since = parseInt(req.query.since);
   if (isNaN(since)) return res.status(400).json({ error: 'since parameter required' });

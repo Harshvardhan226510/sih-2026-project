@@ -14,9 +14,13 @@ export function useAlerts(networkState) {
     return () => { mountedRef.current = false; };
   }, []);
   useEffect(() => {
+    let timeoutId;
     if (networkState.online && networkState.quality !== 'OFFLINE') {
-      sync();
+      timeoutId = setTimeout(() => {
+        sync();
+      }, 500); // Debounce to coalesce rapid reconnect events
     }
+    return () => { if (timeoutId) clearTimeout(timeoutId); };
   }, [networkState.online]);
   async function loadFromCache() {
     try {

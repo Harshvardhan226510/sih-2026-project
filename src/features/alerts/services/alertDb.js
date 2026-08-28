@@ -55,6 +55,26 @@ export async function setLocalRevision(revision) {
   const db = await getDbPromise();
   await db.put('syncState', { id: 'current', revision, lastSync: new Date().toISOString() });
 }
+
+export async function applySyncDelta(alerts, removedIds, revision) {
+  const db = await getDbPromise();
+  const tx = db.transaction(['alerts', 'syncState'], 'readwrite');
+  
+  const alertsStore = tx.objectStore('alerts');
+  for (const alert of alerts) {
+    await alertsStore.put(alert);
+  }
+  
+  for (const id of removedIds) {
+    await alertsStore.delete(id);
+  }
+  
+  const syncStore = tx.objectStore('syncState');
+  await syncStore.put({ id: 'current', revision, lastSync: new Date().toISOString() });
+  
+  await tx.done;
+}
+
 export async function getLastSyncTime() {
   const db = await getDbPromise();
   const state = await db.get('syncState', 'current');

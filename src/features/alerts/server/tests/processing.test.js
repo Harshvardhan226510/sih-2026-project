@@ -16,10 +16,21 @@ describe('Alert Processing', () => {
     });
     it('skips unchanged existing alerts', () => {
       const normalized = [
-        { id: 'a1', sourceId: 'src-1', event: 'Rain', severity: 'Severe', status: 'ACTIVE', headline: 'Rain', description: 'Desc', expiresAt: '2026-12-31', area: 'Mumbai', issuedAt: '2026-01-01', source: 'imd' },
+        {
+          id: 'a1', sourceId: 'src-1', event: 'Rain', severity: 'Severe', status: 'ACTIVE',
+          headline: 'Rain', description: 'Desc', instruction: null, expiresAt: '2026-12-31',
+          effectiveAt: null, area: 'Mumbai', polygon: null, urgency: null, certainty: null,
+          issuedAt: '2026-01-01', source: 'imd',
+        },
       ];
+      // existingMap must include ALL fields compared by hasChanged() to avoid false positives
       const existingMap = new Map([
-        ['src-1', { id: 'a1', sourceId: 'src-1', severity: 'Severe', status: 'ACTIVE', headline: 'Rain', description: 'Desc', expiresAt: '2026-12-31', area: 'Mumbai' }],
+        ['src-1', {
+          id: 'a1', sourceId: 'src-1', severity: 'Severe', status: 'ACTIVE',
+          headline: 'Rain', description: 'Desc', instruction: null, expiresAt: '2026-12-31',
+          effectiveAt: null, area: 'Mumbai', polygon: null, urgency: null, certainty: null,
+          event: 'Rain',
+        }],
       ]);
       const result = processAlerts(normalized, existingMap);
       assert.strictEqual(result.toCreate.length, 0);
@@ -37,12 +48,13 @@ describe('Alert Processing', () => {
       assert.strictEqual(result.toUpdate.length, 1);
       assert.strictEqual(result.toUpdate[0].severity, 'Extreme');
     });
-    it('skips alerts with validation errors', () => {
+    it('skips alerts with validation errors (counted as malformed)', () => {
       const normalized = [
         { id: 'bad', sourceId: '', event: '', severity: 'Severe', issuedAt: '', source: '' },
       ];
       const result = processAlerts(normalized, new Map());
-      assert.strictEqual(result.skipped, 1);
+      // Invalid alerts are now counted in malformed (not skipped)
+      assert.strictEqual(result.malformed, 1, 'validation errors counted in malformed');
       assert.strictEqual(result.toCreate.length, 0);
     });
   });

@@ -3,6 +3,7 @@ const STATUS_LABELS = {
   FAST: { text: 'Online', className: 'net-online' },
   NORMAL: { text: 'Online', className: 'net-online' },
   SLOW: { text: 'Slow Network', className: 'net-slow' },
+  VERY_SLOW: { text: 'Very Slow Network', className: 'net-very-slow' },
   OFFLINE: { text: 'Offline', className: 'net-offline' },
 };
 export function AlertHeader({ network, syncStatus, lastSync, onSync }) {

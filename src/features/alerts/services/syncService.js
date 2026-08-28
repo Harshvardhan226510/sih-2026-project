@@ -70,38 +70,48 @@ export async function performSync(networkProfile = 'fast') {
       }
       return a;
     });
-    await db.putAlerts(normalizedAlerts);
+    
+    let toRemove = data.removed || [];
+    
+    if (data.activeIds) {
+      const allLocal = await db.getAllAlerts();
+      const localActive = allLocal.filter(a => a.status === 'ACTIVE');
+      const serverActiveSet = new Set(data.activeIds);
+      
+      for (const local of localActive) {
+        if (!serverActiveSet.has(local.id)) {
+          const isUpdated = allIncoming.some(a => a.id === local.id);
+          if (!isUpdated && !toRemove.includes(local.id)) {
+            toRemove.push(local.id);
+          }
+        }
+      }
+    }
+    
+    await db.applySyncDelta(normalizedAlerts, toRemove, data.revision);
     
     // Send ACKs for pending deliveries
     for (const pendingId of pendingIds) {
       api.acknowledgeAlert(deviceId, pendingId).catch(console.error);
     }
-    // Note: OS-level notifications are handled by the Service Worker push event handler
-    // (sw.js) via Web Push, which works even when this page/tab is closed.
-    // The inline Notification() call has been intentionally removed to prevent
-    // duplicate notifications when both push and REST sync deliver the same alert.
-  }
-  if (data.removed && data.removed.length > 0) {
-    await db.removeAlerts(data.removed);
-  }
-  if (data.activeIds) {
-    const allLocal = await db.getAllAlerts();
-    const localActive = allLocal.filter(a => a.status === 'ACTIVE');
-    const serverActiveSet = new Set(data.activeIds);
-    const toRemove = [];
-    for (const local of localActive) {
-      if (!serverActiveSet.has(local.id)) {
-        const isUpdated = allIncoming.some(a => a.id === local.id);
-        if (!isUpdated) {
-          toRemove.push(local.id);
+  } else {
+    let toRemove = data.removed || [];
+    if (data.activeIds) {
+      const allLocal = await db.getAllAlerts();
+      const localActive = allLocal.filter(a => a.status === 'ACTIVE');
+      const serverActiveSet = new Set(data.activeIds);
+      
+      for (const local of localActive) {
+        if (!serverActiveSet.has(local.id)) {
+          if (!toRemove.includes(local.id)) {
+            toRemove.push(local.id);
+          }
         }
       }
     }
-    if (toRemove.length > 0) {
-      await db.removeAlerts(toRemove);
-    }
+    
+    await db.applySyncDelta([], toRemove, data.revision);
   }
-  await db.setLocalRevision(data.revision);
   return { updated: true, revision: data.revision, newAlerts: data.alerts?.length || 0 };
 }
 export async function loadCachedAlerts() {

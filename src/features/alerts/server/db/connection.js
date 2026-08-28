@@ -67,6 +67,44 @@ function runMigrations() {
   db.run("DELETE FROM alerts WHERE source = 'mock'");
   */
 
+  const migration005 = resolve(__dirname, 'migrations', '005_reliability.sql');
+  const sql005 = readFileSync(migration005, 'utf-8')
+    // Strip single-line SQL comments (-- ...) before splitting on semicolons
+    // to prevent inline comment examples (e.g. cleanup queries) from producing
+    // orphaned statement fragments.
+    .replace(/--[^\n]*/g, '');
+  sql005.split(';').filter(s => s.trim()).forEach(stmt => {
+    try {
+      db.run(stmt + ';');
+    } catch (err) {
+      // UNIQUE index creation may fail if duplicate (source, source_id) rows exist.
+      // Log the issue but do not abort — dedup is enforced at application level as fallback.
+      logger.warn({ err: err.message }, 'migration 005: statement skipped (check for duplicate source+source_id pairs)');
+    }
+  });
+
+  const migration006 = resolve(__dirname, 'migrations', '006_alert_version.sql');
+  const sql006 = readFileSync(migration006, 'utf-8').replace(/--[^\n]*/g, '');
+  sql006.split(';').filter(s => s.trim()).forEach(stmt => {
+    try {
+      db.run(stmt + ';');
+    } catch (err) {
+      if (!err.message.includes('duplicate column name')) {
+        logger.error({ err: err.message }, 'migration 006 failed');
+      }
+    }
+  });
+
+  const migration007 = resolve(__dirname, 'migrations', '007_mock_cleanup.sql');
+  const sql007 = readFileSync(migration007, 'utf-8').replace(/--[^\n]*/g, '');
+  sql007.split(';').filter(s => s.trim()).forEach(stmt => {
+    try {
+      db.run(stmt + ';');
+    } catch (err) {
+      logger.error({ err: err.message }, 'migration 007 failed');
+    }
+  });
+
   logger.info('database migrations applied');
 }
 export function closeDb() {

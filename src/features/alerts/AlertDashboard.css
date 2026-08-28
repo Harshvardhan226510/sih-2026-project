@@ -65,6 +65,8 @@
 .net-online .net-dot { background: #34d399; }
 .net-slow { background: #78350f1a; color: #fbbf24; }
 .net-slow .net-dot { background: #fbbf24; }
+.net-very-slow { background: #7c2d121a; color: #f97316; }
+.net-very-slow .net-dot { background: #f97316; }
 .net-offline { background: #7f1d1d1a; color: #f87171; }
 .net-offline .net-dot { background: #f87171; }
 

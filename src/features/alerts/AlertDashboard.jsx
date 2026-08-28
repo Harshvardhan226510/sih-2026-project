@@ -80,6 +80,7 @@ export function AlertDashboard() {
             alerts={results}
             selectedId={selected?.id}
             onSelect={setSelected}
+            location={location}
           />
         </div>
         {selected && (

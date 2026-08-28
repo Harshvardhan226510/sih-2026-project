@@ -14,10 +14,6 @@
 import { runQuery, runExec, runGet } from '../db/connection.js';
 
 export class PushRepository {
-  /**
-   * Upsert a push subscription by endpoint (idempotent).
-   * Updates location and keys if subscription already exists.
-   */
   upsert(deviceId, endpoint, p256dh, auth, state, district) {
     const now = new Date().toISOString();
     const existing = runGet(
@@ -32,6 +28,20 @@ export class PushRepository {
         [deviceId, p256dh, auth, state || null, district || null, now, endpoint]
       );
     } else {
+      // Limit subscriptions per device to prevent abuse
+      const count = runGet('SELECT COUNT(*) as count FROM push_subscriptions WHERE device_id = ?', [deviceId]).count;
+      if (count >= 5) {
+        // Remove the oldest subscription for this device
+        runExec(`
+          DELETE FROM push_subscriptions
+          WHERE id IN (
+            SELECT id FROM push_subscriptions
+            WHERE device_id = ?
+            ORDER BY updated_at ASC
+            LIMIT 1
+          )
+        `, [deviceId]);
+      }
       runExec(
         `INSERT INTO push_subscriptions
            (device_id, endpoint, p256dh, auth, state, district, created_at, updated_at)

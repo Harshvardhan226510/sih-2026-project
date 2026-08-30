@@ -23,8 +23,14 @@ export class IMDAlertProvider extends WeatherProvider {
         const capXml = await capRes.text();
         const parsed = parseCAP(capXml);
         if (parsed) {
-          parsed._rssItem = item;
-          alerts.push(parsed);
+          // Strictly identify IMD alerts among multi-agency SACHET feed
+          const sender = (parsed.sender || '').toUpperCase();
+          const author = (item.author || '').toUpperCase();
+          
+          if (sender.includes('IMD') || author.includes('IMD')) {
+            parsed._rssItem = item;
+            alerts.push(parsed);
+          }
         }
       } catch (err) {
         logger.warn({ link: item.link, err: err.message }, 'failed to fetch CAP alert');

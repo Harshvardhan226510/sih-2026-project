@@ -36,6 +36,7 @@ import { expireAlerts } from './expiry.js';
 import { saveDb } from '../db/connection.js';
 import { notificationRouter } from './notificationRouter.js';
 import { ALERT_EVENTS } from '../models/alert.js';
+import { syncAlertToSupabase, syncAlertsToSupabase } from './supabaseSync.js';
 import logger from '../utils/logger.js';
 
 const repo            = new AlertRepository();
@@ -113,6 +114,10 @@ export async function ingestFromProvider(provider) {
         notificationRouter.route(alert, ALERT_EVENTS.CREATED).catch(err =>
           logger.error({ alertId: alert.id, err: err.message }, 'notification router error on create')
         );
+        // One-way Supabase sync — fire-and-forget, never affects local pipeline
+        syncAlertToSupabase(alert, ALERT_EVENTS.CREATED).catch(err =>
+          logger.error({ alertId: alert.id, err: err.message }, 'supabase_sync error on create (non-fatal)')
+        );
       } else {
         // INSERT OR IGNORE returned 0 changes — race with concurrent ingestion or DB constraint hit
         revision--; // roll back revision increment — no actual DB change
@@ -137,6 +142,10 @@ export async function ingestFromProvider(provider) {
       notificationRouter.route(alert, ALERT_EVENTS.UPDATED).catch(err =>
         logger.error({ alertId: alert.id, err: err.message }, 'notification router error on update')
       );
+      // One-way Supabase sync — fire-and-forget, never affects local pipeline
+      syncAlertToSupabase(alert, ALERT_EVENTS.UPDATED).catch(err =>
+        logger.error({ alertId: alert.id, err: err.message }, 'supabase_sync error on update (non-fatal)')
+      );
     } catch (err) {
       revision--;
       logger.error({ alertId: alert.id, err: err.message }, 'ingestion: failed to update alert');
@@ -155,6 +164,10 @@ export async function ingestFromProvider(provider) {
         notificationRouter.route(cancelledAlert, ALERT_EVENTS.CANCELLED).catch(err =>
           logger.error({ alertId, err: err.message }, 'notification router error on cancel')
         );
+        // One-way Supabase sync — fire-and-forget, never affects local pipeline
+        syncAlertToSupabase(cancelledAlert, ALERT_EVENTS.CANCELLED).catch(err =>
+          logger.error({ alertId, err: err.message }, 'supabase_sync error on cancel (non-fatal)')
+        );
       }
       logger.info({ alertId, sourceId }, 'alert_cancelled');
     } catch (err) {
@@ -172,6 +185,29 @@ export async function ingestFromProvider(provider) {
   // IMPORTANT: expireAlerts() is ONLY called here, after a successful provider response.
   // A failed fetch must never trigger expiry of existing valid alerts.
   const expiredCount = expireAlerts();
+
+  // ── Supabase sync for expired alerts ─────────────────────────────────────
+  // Sync newly-expired alerts to Supabase so other modules see up-to-date status.
+  // Fire-and-forget — expiry sync failure must NOT affect the local pipeline.
+  if (expiredCount > 0) {
+    try {
+      const { runQuery } = await import('../db/connection.js');
+      const recentlyExpired = runQuery(
+        `SELECT id, source, source_id as sourceId, event, headline, description,
+                severity, status, effective_at as effectiveAt, expires_at as expiresAt,
+                issued_at as issuedAt, area, area_code as areaCode,
+                latitude, longitude, polygon, language, created_at as createdAt,
+                updated_at as updatedAt
+         FROM alerts WHERE status = 'EXPIRED' AND updated_at >= ?`,
+        [new Date(Date.now() - 60_000).toISOString()] // within the last 60s
+      );
+      syncAlertsToSupabase(recentlyExpired, 'expired').catch(err =>
+        logger.error({ err: err.message }, 'supabase_sync error on expiry batch (non-fatal)')
+      );
+    } catch (err) {
+      logger.error({ err: err.message }, 'supabase_sync: could not query expired alerts (non-fatal)');
+    }
+  }
 
   saveDb();
   repo.updateProviderStatus(providerName, true);

@@ -4,6 +4,7 @@ import {
   alertSummary, healthCheck, triggerIngestion,
   registerDevice, acknowledgeAlert, updateLocation,
   subscribePush, unsubscribePush, getVapidPublicKey, getAlertHistory,
+  injectTestAlerts, cleanupTestAlerts,
 } from '../controllers/alertController.js';
 import { requireAdmin, validateLocationPayload, validateSubscriptionPayload, validateSyncPayload } from '../middleware/security.js';
 
@@ -30,6 +31,8 @@ router.get('/alerts', listAlerts);
 // Admin / manual trigger
 router.post('/alerts/ingest', requireAdmin, triggerIngestion);
 router.post('/admin/ingest', requireAdmin, triggerIngestion);
+router.post('/admin/test-alerts', requireAdmin, injectTestAlerts);
+router.delete('/admin/test-alerts', requireAdmin, cleanupTestAlerts);
 router.get('/health', healthCheck);
 
 export default router;

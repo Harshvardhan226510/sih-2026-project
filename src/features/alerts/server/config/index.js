@@ -36,6 +36,14 @@ const config = {
     publicKey: process.env.VAPID_PUBLIC_KEY || '',
     privateKey: process.env.VAPID_PRIVATE_KEY || '',
   },
+  // ── Supabase shared cross-module database ──────────────────────────────────
+  // Used ONLY for one-way sync from the local alerts DB to Supabase.
+  // The Dashboard, MQTT, and Web Push paths do NOT use Supabase.
+  // If either value is missing, Supabase sync is silently skipped.
+  supabase: {
+    url:            process.env.SUPABASE_URL            || '',
+    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  },
 };
 
 if (!config.vapid.privateKey && config.env === 'production') {

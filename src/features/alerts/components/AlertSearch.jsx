@@ -8,7 +8,7 @@ export function AlertSearch({ query, setQuery }) {
       <input
         id="alert-search"
         type="search"
-        placeholder="Search by area, event, district…"
+        placeholder="Search for alerts..."
         value={query}
         onChange={e => setQuery(e.target.value)}
         autoComplete="off"

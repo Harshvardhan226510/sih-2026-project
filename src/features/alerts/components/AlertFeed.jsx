@@ -37,7 +37,7 @@ export function AlertFeed({ alerts, selectedId, onSelect, location }) {
         const bDist = b.area?.includes(location.district);
         if (aDist && !bDist) return -1;
         if (bDist && !aDist) return 1;
-        
+
         const aState = a.area?.includes(location.state);
         const bState = b.area?.includes(location.state);
         if (aState && !bState) return -1;
@@ -53,17 +53,21 @@ export function AlertFeed({ alerts, selectedId, onSelect, location }) {
   if (!sortedAlerts.length) {
     return (
       <div className="feed-empty" role="status">
-        <p>No active IMD alerts</p>
+        <div className="cloud-icon" aria-hidden="true">☁️</div>
+        <h3>All clear for now</h3>
+        <p>There are no active weather alerts in your area.</p>
       </div>
     );
   }
-  
+
   return (
     <div className="alert-feed" role="feed" aria-label="Weather alerts">
-      {sortedAlerts.map(alert => (
+      {sortedAlerts.map((alert, index) => (
         <AlertCard
           key={alert.id}
           alert={alert}
+          index={index}
+          isPrimary={index === 0}
           isSelected={selectedId === alert.id}
           onClick={onSelect}
           location={location}

@@ -149,23 +149,12 @@ export async function sendAlertToMatchingSubscriptions(alert) {
     return { sent: 0, failed: 0, removed: 0 };
   }
 
-  let subscriptions;
-
-  if (alert.severity === 'Extreme') {
-    // Extreme alerts broadcast to all registered subscriptions
-    subscriptions = pushRepo.getAll();
-    logger.info(
-      { alertId: alert.id, severity: alert.severity, count: subscriptions.length },
-      'Push: Extreme alert — broadcasting to all subscriptions'
-    );
-  } else {
-    const { state, district } = extractLocationFromAlert(alert);
-    subscriptions = pushRepo.getForLocation(state, district);
-    logger.info(
-      { alertId: alert.id, severity: alert.severity, state, district, count: subscriptions.length },
-      'Push: location-filtered fan-out'
-    );
-  }
+  const { state, district } = extractLocationFromAlert(alert);
+  const subscriptions = pushRepo.getForLocation(state, district);
+  logger.info(
+    { alertId: alert.id, severity: alert.severity, state, district, count: subscriptions.length },
+    'Push: location-filtered fan-out'
+  );
 
   if (subscriptions.length === 0) {
     logger.debug({ alertId: alert.id }, 'Push: no matching subscriptions');

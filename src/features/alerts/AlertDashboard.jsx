@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useNetwork } from './hooks/useNetwork.js';
 import { useAlerts } from './hooks/useAlerts.js';
-import { useSearch, useFilters } from './hooks/useSearch.js';
+import { useNetwork } from './hooks/useNetwork.js';
+import { useFilters, useSearch } from './hooks/useSearch.js';
 import { AlertHeader } from './components/AlertHeader.jsx';
 import { AlertSummaryCards } from './components/AlertSummaryCards.jsx';
-import { AlertFeed } from './components/AlertFeed.jsx';
-import { AlertDetail } from './components/AlertDetail.jsx';
 import { AlertFilters } from './components/AlertFilters.jsx';
 import { AlertSearch } from './components/AlertSearch.jsx';
+import { AlertFeed } from './components/AlertFeed.jsx';
+import { AlertDetail } from './components/AlertDetail.jsx';
 import { LocationSettings } from './components/LocationSettings.jsx';
 import { getUserLocation, setUserLocation } from './services/alertDb.js';
 import './AlertDashboard.css';
@@ -18,9 +18,12 @@ export function AlertDashboard() {
   const { filters, setFilters, filtered, uniqueEvents, uniqueAreas } = useFilters(alerts);
   const { query, setQuery, results } = useSearch(filtered);
   const [selected, setSelected] = useState(null);
-  
   const [location, setLocation] = useState({ state: '', district: '' });
-  
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }, []);
+
   useEffect(() => {
     getUserLocation().then(setLocation);
     if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
@@ -29,8 +32,6 @@ export function AlertDashboard() {
 
     const handleLocationUpdated = (e) => {
       setLocation(e.detail);
-      // We don't necessarily need to trigger a full sync here because the location watcher 
-      // already ensures the backend is aware of the new location. However, to get the new alerts:
       sync();
     };
 
@@ -47,6 +48,10 @@ export function AlertDashboard() {
       sync();
     }
   }
+
+  // Count active alerts near user (roughly matching district)
+  const localActiveCount = results.filter(a => a.status === 'ACTIVE' && location.district && a.area?.includes(location.district)).length;
+
   return (
     <div className="dashboard">
       <AlertHeader
@@ -57,14 +62,14 @@ export function AlertDashboard() {
       />
       {error && (
         <div className="sync-error" role="alert">
-          Sync failed: {error}. Showing cached data.
+          <span>⚠️</span> Sync failed: {error}. Showing cached data.
         </div>
       )}
-      <AlertSummaryCards summary={summary} />
+
       <div className="dashboard-body">
         <div className="dashboard-sidebar">
-          <AlertSearch query={query} setQuery={setQuery} />
           <LocationSettings location={location} onSave={handleSaveLocation} />
+          <AlertSearch query={query} setQuery={setQuery} />
           <AlertFilters
             filters={filters}
             setFilters={setFilters}
@@ -72,17 +77,31 @@ export function AlertDashboard() {
             uniqueAreas={uniqueAreas}
           />
         </div>
+
         <div className="dashboard-main">
           <div className="feed-header">
-            <span className="feed-count">{results.length} alert{results.length !== 1 ? 's' : ''}</span>
+            <h2 className="feed-intro-title">Your Alerts</h2>
+            <p className="feed-intro-count">
+              {localActiveCount > 0
+                ? `${localActiveCount} active near you`
+                : `${results.length} total alert${results.length !== 1 ? 's' : ''}`}
+            </p>
+            <AlertSummaryCards summary={summary} />
           </div>
           <AlertFeed
             alerts={results}
             selectedId={selected?.id}
-            onSelect={setSelected}
+            onSelect={(alert) => {
+              if (selected?.id === alert.id) {
+                setSelected(null);
+              } else {
+                setSelected(alert);
+              }
+            }}
             location={location}
           />
         </div>
+
         {selected && (
           <AlertDetail
             alert={selected}

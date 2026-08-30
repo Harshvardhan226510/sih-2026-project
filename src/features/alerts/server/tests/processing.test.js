@@ -57,6 +57,76 @@ describe('Alert Processing', () => {
       assert.strictEqual(result.malformed, 1, 'validation errors counted in malformed');
       assert.strictEqual(result.toCreate.length, 0);
     });
+    it('TEST A: ignores local status changes (EXPIRED -> ACTIVE)', () => {
+      // Existing alert: status = EXPIRED, expiresAt = past
+      const existingMap = new Map([
+        ['src-1', {
+          id: 'a1', sourceId: 'src-1', severity: 'Severe', status: 'EXPIRED',
+          headline: 'Rain', description: 'Desc', instruction: null, expiresAt: '2026-08-20',
+          effectiveAt: null, area: 'Mumbai', polygon: null, urgency: null, certainty: null,
+          event: 'Rain',
+        }],
+      ]);
+      // Incoming same CAP alert: status = ACTIVE, same upstream fields
+      const normalized = [
+        {
+          id: 'a1', sourceId: 'src-1', event: 'Rain', severity: 'Severe', status: 'ACTIVE',
+          headline: 'Rain', description: 'Desc', instruction: null, expiresAt: '2026-08-20',
+          effectiveAt: null, area: 'Mumbai', polygon: null, urgency: null, certainty: null,
+          issuedAt: '2026-08-19', source: 'imd',
+        },
+      ];
+      const result = processAlerts(normalized, existingMap);
+      assert.strictEqual(result.toUpdate.length, 0, 'Should not detect update');
+      assert.strictEqual(result.skipped, 1, 'Should skip due to no genuine upstream change');
+    });
+
+    it('TEST B: detects genuine upstream changes despite EXPIRED status', () => {
+      const existingMap = new Map([
+        ['src-1', {
+          id: 'a1', sourceId: 'src-1', severity: 'Severe', status: 'EXPIRED',
+          headline: 'Rain', description: 'Desc', instruction: null, expiresAt: '2026-08-20',
+          effectiveAt: null, area: 'Mumbai', polygon: null, urgency: null, certainty: null,
+          event: 'Rain',
+        }],
+      ]);
+      // Incoming CAP alert contains a genuine upstream change (changed headline)
+      const normalized = [
+        {
+          id: 'a1', sourceId: 'src-1', event: 'Rain', severity: 'Severe', status: 'ACTIVE',
+          headline: 'Heavy Rain Update', description: 'Desc', instruction: null, expiresAt: '2026-08-20',
+          effectiveAt: null, area: 'Mumbai', polygon: null, urgency: null, certainty: null,
+          issuedAt: '2026-08-19', source: 'imd',
+        },
+      ];
+      const result = processAlerts(normalized, existingMap);
+      assert.strictEqual(result.toUpdate.length, 1, 'Should detect genuine upstream change');
+      assert.strictEqual(result.toUpdate[0].headline, 'Heavy Rain Update');
+    });
+
+    it('TEST C: correctly processes expiresAt extension into the future', () => {
+      const existingMap = new Map([
+        ['src-1', {
+          id: 'a1', sourceId: 'src-1', severity: 'Severe', status: 'EXPIRED',
+          headline: 'Rain', description: 'Desc', instruction: null, expiresAt: '2026-08-20',
+          effectiveAt: null, area: 'Mumbai', polygon: null, urgency: null, certainty: null,
+          event: 'Rain',
+        }],
+      ]);
+      // Existing expired alert receives an upstream expiresAt extension into the future
+      const normalized = [
+        {
+          id: 'a1', sourceId: 'src-1', event: 'Rain', severity: 'Severe', status: 'ACTIVE',
+          headline: 'Rain', description: 'Desc', instruction: null, expiresAt: '2099-12-31',
+          effectiveAt: null, area: 'Mumbai', polygon: null, urgency: null, certainty: null,
+          issuedAt: '2026-08-19', source: 'imd',
+        },
+      ];
+      const result = processAlerts(normalized, existingMap);
+      assert.strictEqual(result.toUpdate.length, 1, 'Should detect expiresAt extension');
+      assert.strictEqual(result.toUpdate[0].expiresAt, '2099-12-31');
+    });
+
   });
   describe('classifySeverity', () => {
     it('classifies extremely heavy as Extreme', () => {

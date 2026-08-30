@@ -1,39 +1,65 @@
-import { getSeverityConfig, formatTimeAgo, formatTime } from '../utils.js';
+import { getSeverityConfig, formatTimeAgo, formatTime, getWeatherImageForEvent } from '../utils.js';
+
 export function AlertCard({ alert, onClick, isSelected, location }) {
   const sev = getSeverityConfig(alert.severity);
   const isExpired = alert.status === 'EXPIRED';
   const isUpdated = alert.version > 1;
   const isLocal = location?.district && alert.area?.includes(location.district);
 
+  const bgImage = getWeatherImageForEvent(alert.event);
+
   return (
     <article
       className={`alert-card ${isSelected ? 'selected' : ''} ${isExpired ? 'expired' : ''}`}
-      style={{ borderLeftColor: sev.color }}
+      style={{ borderColor: isSelected ? 'var(--text-main)' : 'var(--border-subtle)' }}
       onClick={() => onClick(alert)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(alert); } }}
       tabIndex={0}
       role="button"
       aria-label={`${alert.event}, ${sev.label} severity, ${alert.area || 'Unknown area'}`}
     >
-      <div className="card-top">
-        <span className="card-event">
-          {alert.event} {isUpdated && <span className="status-tag" style={{background: '#e0f2fe', color: '#0369a1', fontSize: '0.7em', padding: '0.1rem 0.3rem', marginLeft: '0.5rem'}}>UPDATED</span>}
-          {isLocal && <span className="status-tag" style={{background: '#dcfce7', color: '#166534', fontSize: '0.7em', padding: '0.1rem 0.3rem', marginLeft: '0.5rem'}}>LOCAL</span>}
-        </span>
-        <span className="severity-badge" style={{ color: sev.color, backgroundColor: sev.bg }}>
-          <span aria-hidden="true">{sev.icon}</span> {sev.label}
-        </span>
+      {/* 1. LARGE WEATHER IMAGE / HERO AREA */}
+      <div className="card-hero" style={{ backgroundImage: `url('${bgImage}')` }}>
+        <div className="card-hero-overlay"></div>
+        <div className="card-hero-content">
+          <div className="card-badges">
+            <span className="severity-badge" style={{ color: '#fff', backgroundColor: sev.color }}>
+              <span aria-hidden="true">{sev.icon}</span> {sev.label}
+            </span>
+            <span className="verified-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              Verified IMD
+            </span>
+          </div>
+
+          <div className="card-hero-bottom">
+            <h3 className="card-event-title">{alert.event}</h3>
+            <div className="card-location-row">
+              <span aria-hidden="true">📍</span> {alert.area || 'Area not specified'}
+              {isLocal && <span className="tag-local">LOCAL</span>}
+              {isUpdated && <span className="tag-updated">UPDATED</span>}
+              {isExpired && <span className="tag-expired">EXPIRED</span>}
+            </div>
+          </div>
+        </div>
       </div>
-      <div className="card-area">{alert.area || 'Area not specified'}</div>
-      {alert.headline && <div className="card-headline">{alert.headline}</div>}
-      <div className="card-meta">
-        <span title={formatTime(alert.issuedAt)}>Issued {formatTimeAgo(alert.issuedAt)}</span>
-        {alert.expiresAt && <span>Expires {formatTime(alert.expiresAt)}</span>}
-        <span className="card-source" style={{display: 'flex', alignItems: 'center', gap: '0.2rem'}}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-          {alert.source === 'imd' ? 'Verified IMD Source' : alert.source?.toUpperCase()}
-        </span>
-        {isExpired && <span className="status-expired">EXPIRED</span>}
+
+      {/* 2. CLEAN INFORMATION AREA BELOW */}
+      <div className="card-info-area">
+        {alert.description && (
+          <p className="card-description">{alert.description}</p>
+        )}
+        
+        <div className="card-footer">
+          <div className="meta-text">
+            <span title={formatTime(alert.issuedAt)}>Issued {formatTimeAgo(alert.issuedAt)}</span>
+            {alert.expiresAt && <span className="meta-divider">•</span>}
+            {alert.expiresAt && <span>Expires {formatTime(alert.expiresAt)}</span>}
+          </div>
+          <button className="card-action-btn" tabIndex="-1">
+            View Details <span aria-hidden="true">→</span>
+          </button>
+        </div>
       </div>
     </article>
   );

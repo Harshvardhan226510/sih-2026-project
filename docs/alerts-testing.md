@@ -1,5 +1,7 @@
 # WeatherGPT Alert System — Testing Guide
 
+> **Note**: Multilingual translation and Read Aloud features are currently **OUT OF SCOPE**. Do not add tests for these features.
+
 This guide details the step-by-step instructions to verify the entire alert architecture, from real IMD ingestion down to offline client caching and Web Push notifications.
 
 ## 1. Verifying Real IMD Ingestion

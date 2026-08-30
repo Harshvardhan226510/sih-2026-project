@@ -1,5 +1,7 @@
 # WeatherGPT Alert System — Architecture
 
+> **Note**: Multilingual translation and Read Aloud features are currently **OUT OF SCOPE** and have been removed from this architecture to maintain a stable, English-only baseline.
+
 This document completely details the alerting pipeline architecture, spanning from IMD ingestion down to OS-level notifications and offline client caching.
 
 ## 1. System Architecture

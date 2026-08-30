@@ -6,6 +6,18 @@ import { PushRepository } from '../repositories/pushRepository.js';
 import { getVapidPublicKey as vapidKey, getPushStats } from '../services/webPush.js';
 import { getMqttStatus } from '../services/mqttService.js';
 import { reverseGeocode } from '../services/location.js';
+import { WeatherProvider } from '../providers/base.js';
+import { runExec } from '../db/connection.js';
+
+class MockCapProvider extends WeatherProvider {
+  constructor(alerts) {
+    super();
+    this._alerts = alerts;
+  }
+  get name() { return 'imd'; }
+  get type() { return 'alert'; }
+  async fetchAlerts() { return this._alerts; }
+}
 const repo = new AlertRepository();
 const pushRepo = new PushRepository();
 export function listAlerts(req, res) {
@@ -119,6 +131,35 @@ export async function triggerIngestion(req, res) {
       feedStatus: 'error',
       error: err.message,
     });
+  }
+}
+
+export async function injectTestAlerts(req, res) {
+  try {
+    const { alerts } = req.body;
+    if (!Array.isArray(alerts)) {
+      return res.status(400).json({ error: 'Body must contain an alerts array' });
+    }
+    const provider = new MockCapProvider(alerts);
+    const result = await ingestFromProvider(provider);
+    res.json({ status: 'ok', result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+export function cleanupTestAlerts(req, res) {
+  try {
+    const delRevs = runExec("DELETE FROM alert_revisions WHERE alert_id IN (SELECT id FROM alerts WHERE id LIKE '%test-%' OR source_id LIKE 'test-%')");
+    const delAlerts = runExec("DELETE FROM alerts WHERE id LIKE '%test-%' OR source_id LIKE 'test-%'");
+    res.json({
+      status: 'ok',
+      cleanedRevisions: delRevs.changes,
+      cleanedAlerts: delAlerts.changes
+    });
+  } catch (err) {
+    logger.error({ err: err.message }, 'Failed to cleanup test alerts');
+    res.status(500).json({ error: err.message });
   }
 }
 

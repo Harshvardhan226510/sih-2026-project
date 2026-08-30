@@ -1,23 +1,32 @@
-import { SEVERITY_CONFIG } from '../utils.js';
 export function AlertSummaryCards({ summary }) {
-  const cards = [
-    { key: 'total', label: 'Active Alerts', count: summary.total, color: '#e5e7eb', icon: '📋' },
-    { key: 'extreme', label: 'Extreme', count: summary.extreme, ...SEVERITY_CONFIG.Extreme },
-    { key: 'severe', label: 'Severe', count: summary.severe, ...SEVERITY_CONFIG.Severe },
-    { key: 'moderate', label: 'Moderate', count: summary.moderate, ...SEVERITY_CONFIG.Moderate },
-    { key: 'minor', label: 'Minor', count: summary.minor, ...SEVERITY_CONFIG.Minor },
-  ];
+  if (!summary || summary.total === 0) return null;
+
   return (
-    <div className="summary-cards" role="region" aria-label="Alert summary">
-      {cards.map(card => (
-        <div key={card.key} className="summary-card" style={{ borderLeftColor: card.color }}>
-          <span className="card-icon" aria-hidden="true">{card.icon}</span>
-          <div className="card-content">
-            <span className="card-count">{card.count}</span>
-            <span className="card-label">{card.label}</span>
-          </div>
+    <div className="weather-pulse" role="region" aria-label="Alert summary">
+      {summary.extreme > 0 && (
+        <div className="pulse-item" style={{ borderColor: 'var(--severity-extreme)', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--severity-extreme)' }}>
+          <span className="pulse-icon" aria-hidden="true">🔴</span>
+          {summary.extreme} Extreme
         </div>
-      ))}
+      )}
+      {summary.severe > 0 && (
+        <div className="pulse-item" style={{ borderColor: 'var(--severity-severe)', background: 'rgba(249, 115, 22, 0.1)', color: 'var(--severity-severe)' }}>
+          <span className="pulse-icon" aria-hidden="true">🟠</span>
+          {summary.severe} Severe
+        </div>
+      )}
+      {summary.moderate > 0 && (
+        <div className="pulse-item" style={{ borderColor: 'var(--severity-moderate)', background: 'rgba(234, 179, 8, 0.1)', color: 'var(--severity-moderate)' }}>
+          <span className="pulse-icon" aria-hidden="true">🟡</span>
+          {summary.moderate} Moderate
+        </div>
+      )}
+      {summary.minor > 0 && (
+        <div className="pulse-item" style={{ borderColor: 'var(--severity-minor)', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--severity-minor)' }}>
+          <span className="pulse-icon" aria-hidden="true">🔵</span>
+          {summary.minor} Minor
+        </div>
+      )}
     </div>
   );
 }

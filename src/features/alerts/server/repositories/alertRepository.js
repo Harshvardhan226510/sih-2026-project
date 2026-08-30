@@ -140,16 +140,20 @@ export class AlertRepository {
   getSyncData(sinceRevision, { state, district, networkProfile } = {}) {
     let fields = FULL_FIELDS;
     if (networkProfile === 'slow') fields = COMPACT_FIELDS;
-    if (networkProfile === 'very_slow') fields = MINIMAL_FIELDS;
+    if (networkProfile === 'very-slow' || networkProfile === 'very_slow') fields = MINIMAL_FIELDS;
 
     let alertQuery = `SELECT ${fields} FROM alerts WHERE revision > ?`;
     let params     = [sinceRevision];
 
-    if (state || district) {
+    if (sinceRevision === 0) {
+      alertQuery += ` AND status = 'ACTIVE'`;
+    }
+
+    if ((state || district) && networkProfile !== 'fast') {
       const locationConditions = [];
       locationConditions.push(`severity = 'Extreme'`);
       
-      if (networkProfile === 'slow' || networkProfile === 'very_slow') {
+      if (networkProfile === 'slow' || networkProfile === 'very-slow' || networkProfile === 'very_slow') {
         // Strict filtering for slow networks
         if (state)    { locationConditions.push('area LIKE ?'); params.push(`%${state}%`); }
         if (district) { locationConditions.push('area LIKE ?'); params.push(`%${district}%`); }

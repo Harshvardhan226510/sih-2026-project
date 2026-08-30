@@ -116,7 +116,6 @@ export function hasChanged(existing, incoming) {
     existing.severity    !== incoming.severity    ||
     existing.urgency     !== incoming.urgency     ||
     existing.certainty   !== incoming.certainty   ||
-    existing.status      !== incoming.status      ||
     existing.event       !== incoming.event       ||
     existing.headline    !== incoming.headline    ||
     existing.description !== incoming.description ||

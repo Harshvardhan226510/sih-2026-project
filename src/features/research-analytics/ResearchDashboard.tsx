@@ -48,10 +48,12 @@ import {
   Activity 
 } from 'lucide-react';
 
+import { LocationData } from './components/LocationSearch.js';
+
 export const ResearchDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('overview');
-  const [location, setLocation] = useState<string>('Pune');
-  const [locationB, setLocationB] = useState<string>('Mumbai');
+  const [location, setLocation] = useState<string | LocationData>('Pune');
+  const [locationB, setLocationB] = useState<string | LocationData>('Mumbai');
   const [metric, setMetric] = useState<WeatherMetric>('rainfall');
   const [aggregation, setAggregation] = useState<AggregationPeriod>('monthly');
   const [startDate, setStartDate] = useState<string>('2015-01-01');

@@ -27,16 +27,17 @@ import {
   Info 
 } from 'lucide-react';
 import { DataProvenance } from './DataProvenance.js';
+import { LocationSearch, LocationData } from './LocationSearch.js';
 
 interface Props {
   data: HistoricalAnalyticsResponse | null;
   loading: boolean;
-  selectedLocation: string;
+  selectedLocation: string | LocationData;
   startDate: string;
   endDate: string;
   selectedMetric: WeatherMetric;
   selectedAggregation: AggregationPeriod;
-  onLocationChange: (loc: string) => void;
+  onLocationChange: (loc: LocationData | string) => void;
   onDateChange: (start: string, end: string) => void;
   onMetricChange: (m: WeatherMetric) => void;
   onAggregationChange: (agg: AggregationPeriod) => void;
@@ -81,8 +82,12 @@ export const HistoricalExplorer: React.FC<Props> = ({
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
+    
+    // Extract name if object
+    const locName = typeof selectedLocation === 'string' ? selectedLocation : selectedLocation.name;
+    
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `WeatherGPT_${selectedLocation}_${selectedMetric}_${startDate}_to_${endDate}.csv`);
+    link.setAttribute('download', `WeatherGPT_${locName}_${selectedMetric}_${startDate}_to_${endDate}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -98,23 +103,10 @@ export const HistoricalExplorer: React.FC<Props> = ({
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
               Target Location
             </label>
-            <select
-              value={selectedLocation}
-              onChange={(e) => onLocationChange(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
-            >
-              <option value="Pune">Pune, Maharashtra</option>
-              <option value="Mumbai">Mumbai, Maharashtra</option>
-              <option value="Delhi">Delhi, NCR</option>
-              <option value="Bengaluru">Bengaluru, Karnataka</option>
-              <option value="Chennai">Chennai, Tamil Nadu</option>
-              <option value="Kolkata">Kolkata, West Bengal</option>
-              <option value="Hyderabad">Hyderabad, Telangana</option>
-              <option value="Ahmedabad">Ahmedabad, Gujarat</option>
-              <option value="Jaipur">Jaipur, Rajasthan</option>
-              <option value="Shimla">Shimla, Himachal Pradesh</option>
-              <option value="Kochi">Kochi, Kerala</option>
-            </select>
+            <LocationSearch 
+              selectedLocation={selectedLocation} 
+              onLocationChange={onLocationChange} 
+            />
           </div>
 
           {/* Meteorological Parameter */}
@@ -257,7 +249,7 @@ export const HistoricalExplorer: React.FC<Props> = ({
                   <YAxis stroke="#64748b" tick={{ fontSize: 11 }} />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#0b1329', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
-                    formatter={(val: any, name: string) => [`${val} ${unit}`, name]}
+                    formatter={(val: any, name: any) => [`${val} ${unit}`, name]}
                   />
                   <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
                   <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} dot={false} name={`Observed (${unit})`} />

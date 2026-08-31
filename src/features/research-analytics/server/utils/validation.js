@@ -34,8 +34,44 @@ export const VALID_AGGREGATIONS = [
 ];
 export function resolveLocation(locationInput) {
     if (!locationInput || typeof locationInput !== 'string') {
-        return INDIAN_LOCATIONS.pune;
+        throw new Error("Validation Error: Location is required and must be within India.");
     }
+
+    // Try parsing as JSON first (from new frontend LocationSearch)
+    try {
+        const parsed = JSON.parse(locationInput);
+        if (parsed && typeof parsed === 'object' && 'lat' in parsed && 'lon' in parsed) {
+            const lat = Number(parsed.lat);
+            const lon = Number(parsed.lon);
+            const country = (parsed.country || parsed.country_code || '').toLowerCase();
+            
+            // Primary validation: Geocoder country metadata
+            if (country !== 'india' && country !== 'in') {
+                throw new Error("Validation Error: Only locations within India are supported.");
+            }
+            
+            // Secondary validation: Prevent fabricated country payloads for foreign coordinates
+            if (lat < 6.0 || lat > 36.0 || lon < 68.0 || lon > 98.0) {
+                 throw new Error("Validation Error: Coordinates do not match the geographic region of India.");
+            }
+            
+            if (Number.isFinite(lat) && Number.isFinite(lon) && 
+                lat >= -90 && lat <= 90 && 
+                lon >= -180 && lon <= 180) {
+                return {
+                    name: parsed.name || `Coord (${lat.toFixed(2)}, ${lon.toFixed(2)})`,
+                    state: parsed.state || 'Unknown Region',
+                    country: parsed.country || 'India',
+                    lat: lat,
+                    lon: lon
+                };
+            }
+        }
+    } catch (e) {
+        if (e.message.includes('Validation Error')) throw e;
+        // Not a JSON string, fallback to legacy processing
+    }
+
     const cleaned = locationInput.toLowerCase().trim();
     // Check direct predefined dictionary match
     if (INDIAN_LOCATIONS[cleaned]) {
@@ -51,23 +87,11 @@ export function resolveLocation(locationInput) {
     if (cleaned.includes(',')) {
         const parts = cleaned.split(',').map(p => parseFloat(p.trim()));
         if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-            return {
-                name: `Coord (${parts[0].toFixed(2)}, ${parts[1].toFixed(2)})`,
-                state: 'Custom Region',
-                country: 'India',
-                lat: parts[0],
-                lon: parts[1]
-            };
+            throw new Error("Validation Error: Raw coordinates without country metadata are not permitted.");
         }
     }
     // Default fallback
-    return {
-        name: locationInput.charAt(0).toUpperCase() + locationInput.slice(1),
-        state: 'India',
-        country: 'India',
-        lat: 18.5204,
-        lon: 73.8567
-    };
+    throw new Error(`Validation Error: Unknown or unsupported location '${locationInput}'. Only locations in India are supported.`);
 }
 export function validateDateRange(startDate, endDate) {
     const defaultEnd = new Date().toISOString().split('T')[0];

@@ -105,6 +105,16 @@ function runMigrations() {
     }
   });
 
+  const migration008 = resolve(__dirname, 'migrations', '008_research_cache.sql');
+  const sql008 = readFileSync(migration008, 'utf-8').replace(/--[^\n]*/g, '');
+  sql008.split(';').filter(s => s.trim()).forEach(stmt => {
+    try {
+      db.run(stmt + ';');
+    } catch (err) {
+      logger.error({ err: err.message }, 'migration 008 failed');
+    }
+  });
+
   logger.info('database migrations applied');
 }
 export function closeDb() {

@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import alertRoutes from './routes/alerts.js';
+import analyticsRoutes from '../../research-analytics/server/routes/index.js';
 import logger from './utils/logger.js';
 import config from './config/index.js';
 
@@ -43,6 +44,8 @@ app.use((req, res, next) => {
   next();
 });
 app.use('/api', alertRoutes);
+app.use('/api/analytics', analyticsRoutes);
+
 
 app.use((err, req, res, _next) => {
   logger.error({ err: err.message, path: req.path }, 'unhandled error');

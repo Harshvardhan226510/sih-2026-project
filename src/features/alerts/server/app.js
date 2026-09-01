@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import alertRoutes from './routes/alerts.js';
 import analyticsRoutes from '../../research-analytics/server/routes/index.js';
+import aviationMarineRoutes from '../../aviation-marine/server/routes/index.js';
 import logger from './utils/logger.js';
 import config from './config/index.js';
 
@@ -22,7 +23,11 @@ app.use(helmet({
   }
 }));
 
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'If-None-Match']
+}));
 app.use(compression());
 app.use(express.json());
 
@@ -45,6 +50,7 @@ app.use((req, res, next) => {
 });
 app.use('/api', alertRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api', aviationMarineRoutes);
 
 
 app.use((err, req, res, _next) => {

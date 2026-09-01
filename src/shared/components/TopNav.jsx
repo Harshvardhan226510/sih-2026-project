@@ -1,11 +1,12 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Bell, BarChart3, MessageSquare, Shield } from 'lucide-react';
+import { Bell, BarChart3, Plane, Shield } from 'lucide-react';
 
 export function TopNav() {
   const navLinks = [
     { to: '/alerts', label: 'Alerts Hub', icon: Bell },
     { to: '/research', label: 'Research & Analytics', icon: BarChart3 },
+    { to: '/aviation-marine', label: 'Aviation & Marine', icon: Plane },
   ];
 
   return (

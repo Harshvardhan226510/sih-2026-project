@@ -3,6 +3,8 @@ import { Plane, Ship, Search, Wind, Droplets, Thermometer, AlertTriangle, Eye, W
 import axios from 'axios';
 import jsPDF from 'jspdf';
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 const INDIAN_AIRPORTS = [
   { icao: 'VABB', city: 'Mumbai', lat: 19.088, lon: 72.868 },
   { icao: 'VIDP', city: 'Delhi', lat: 28.556, lon: 77.100 },
@@ -21,7 +23,7 @@ const INDIAN_AIRPORTS = [
   { icao: 'VEBN', city: 'Varanasi', lat: 25.451, lon: 82.859 },
   { icao: 'VOCB', city: 'Coimbatore', lat: 11.030, lon: 77.043 },
   { icao: 'VEPT', city: 'Patna', lat: 25.591, lon: 85.088 },
-  { icao: 'VABB', city: 'Navi Mumbai', lat: 18.988, lon: 73.068 },
+  { icao: 'NMI', city: 'Navi Mumbai', lat: 18.988, lon: 73.068 },
   { icao: 'VAAK', city: 'Akola', lat: 20.698, lon: 77.058 }
 ];
 
@@ -107,7 +109,7 @@ const AviationMarineDashboard = () => {
     setLiveError(null);
     setSelectedFlight(null);
     try {
-      const res = await axios.get(`http://localhost:8000/api/aviation/live_by_departure?airport=${liveSearchDep}`);
+      const res = await axios.get(`${API_BASE}/api/aviation/live_by_departure?airport=${liveSearchDep}`);
       if (res.data.length === 0) {
         setLiveError(`No live flights found that recently departed from ${liveSearchDep}.`);
       }
@@ -129,7 +131,7 @@ const AviationMarineDashboard = () => {
     if (!d || !a) return;
     setAviationLoading(true); setAviationError(null); setTafSliderIndex(0);
     try {
-      const response = await axios.get(`http://localhost:8000/api/aviation/route?departure=${d}&arrival=${a}`);
+      const response = await axios.get(`${API_BASE}/api/aviation/route?departure=${d}&arrival=${a}`);
       setAviationData(response.data);
     } catch (err) {
       setAviationError("Error fetching data");
@@ -141,7 +143,7 @@ const AviationMarineDashboard = () => {
   const fetchMarineRoute = async () => {
     setMarineLoading(true); setMarineError(null);
     try {
-      const response = await axios.get(`http://localhost:8000/api/marine/route?start_lat=${startLat}&start_lon=${startLon}&end_lat=${endLat}&end_lon=${endLon}`);
+      const response = await axios.get(`${API_BASE}/api/marine/route?start_lat=${startLat}&start_lon=${startLon}&end_lat=${endLat}&end_lon=${endLon}`);
       setMarineData(response.data);
     } catch (err) {
       setMarineError("Error scanning marine route");

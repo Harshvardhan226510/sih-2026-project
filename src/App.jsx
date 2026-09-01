@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AlertDashboard } from './features/alerts/AlertDashboard.jsx';
 import { ResearchDashboard } from './features/research-analytics/ResearchDashboard.tsx';
+import AviationMarineDashboard from './features/aviation-marine/AviationMarineDashboard.jsx';
 import { TopNav } from './shared/components/TopNav.jsx';
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
           <Routes>
             <Route path="/alerts" element={<AlertDashboard />} />
             <Route path="/research" element={<ResearchDashboard />} />
+            <Route path="/aviation-marine" element={<AviationMarineDashboard />} />
             <Route path="/analytics" element={<Navigate to="/research" replace />} />
             <Route path="*" element={<Navigate to="/alerts" replace />} />
           </Routes>

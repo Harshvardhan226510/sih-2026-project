@@ -127,6 +127,18 @@ function runMigrations() {
     });
   }
 
+  const migration010 = resolve(__dirname, 'migrations', '010_aviation_marine_logs.sql');
+  if (existsSync(migration010)) {
+    const sql010 = readFileSync(migration010, 'utf-8').replace(/--[^\n]*/g, '');
+    sql010.split(';').filter(s => s.trim()).forEach(stmt => {
+      try {
+        db.run(stmt + ';');
+      } catch (err) {
+        logger.error({ err: err.message }, 'migration 010 failed');
+      }
+    });
+  }
+
   logger.info('database migrations applied');
 }
 export function closeDb() {

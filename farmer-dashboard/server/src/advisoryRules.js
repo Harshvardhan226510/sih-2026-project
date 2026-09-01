@@ -1,0 +1,6 @@
+export function generateAdvisory({ rainProbability = 0, windSpeed = 0, temperatureMax = 25 }) {
+  if (rainProbability >= 60) return { verdict: 'Rain expected — delay spraying', reason: `Rain probability is ${rainProbability}% in the next 48 hours. Treatment may wash away.`, action: 'Wait until 24 hours after rain stops.', urgency: rainProbability >= 80 ? 'high' : 'medium', evidence: { rainProbability } };
+  if (windSpeed >= 25) return { verdict: 'Strong winds — postpone spraying', reason: `Winds near ${windSpeed} km/h can cause spray drift.`, action: 'Spray only when wind reduces below 15 km/h.', urgency: 'medium', evidence: { windSpeed } };
+  if (temperatureMax >= 35) return { verdict: 'Hot day ahead — irrigate early', reason: `Maximum temperature may reach ${temperatureMax}°C, increasing crop water stress.`, action: 'Irrigate early morning and avoid midday watering.', urgency: 'medium', evidence: { temperatureMax } };
+  return { verdict: 'Favourable conditions — continue field work', reason: 'No immediate rain, high wind, or heat risk is indicated.', action: 'Monitor the next forecast refresh before spraying or harvesting.', urgency: 'low', evidence: { rainProbability, windSpeed, temperatureMax } };
+}

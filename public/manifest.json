@@ -1,0 +1,16 @@
+{
+  "name": "WeatherGPT Alert System",
+  "short_name": "WeatherGPT",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1117",
+  "theme_color": "#0f1117",
+  "description": "Indian weather alert monitoring system with offline-first architecture",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

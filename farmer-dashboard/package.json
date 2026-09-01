@@ -1,0 +1,24 @@
+{
+  "name": "weathergpt-farmer-dashboard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "node server/src/server.js",
+    "dev:web": "vite --host 0.0.0.0",
+    "test": "node --test server/test/*.test.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.0.2",
+    "concurrently": "^9.1.2",
+    "vite": "^7.1.3"
+  }
+}

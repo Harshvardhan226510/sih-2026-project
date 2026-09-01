@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { handleChatRequest } from "./llm.ts";
+import { handleChatRequestStream } from "./llm.ts";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -11,14 +11,26 @@ serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, fileData } = await req.json();
     
-    // Will hook up RAG and LLM here
-    const reply = await handleChatRequest(messages);
-    
-    return new Response(JSON.stringify({ reply }), { 
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          await handleChatRequestStream(messages, fileData, controller);
+        } catch (err) {
+          console.error(err);
+          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ type: 'text', text: `\n\nError: ${err.message}` })}\n\n`));
+        } finally {
+          controller.close();
+        }
+      }
+    });
+
+    return new Response(stream, { 
       headers: { 
-        "Content-Type": "application/json",
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
         "Access-Control-Allow-Origin": "*" 
       } 
     });

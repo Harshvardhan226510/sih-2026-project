@@ -1,22 +1,29 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { MainLayout } from './shared/components/MainLayout.jsx';
+import { FarmerDashboard } from './features/farmer-dashboard/FarmerDashboard.jsx';
+import ResearchDashboard from './features/research-analytics/ResearchDashboard.tsx';
 import { AlertDashboard } from './features/alerts/AlertDashboard.jsx';
-import { ResearchDashboard } from './features/research-analytics/ResearchDashboard.tsx';
-import { TopNav } from './shared/components/TopNav.jsx';
+// Temporarily using div for placeholders
+const Placeholder = ({ title }) => (
+  <div className="flex items-center justify-center h-full text-slate-500 bg-white">
+    <h3 className="text-xl font-medium">{title}</h3>
+  </div>
+);
 
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-slate-950 flex flex-col">
-        <TopNav />
-        <main className="flex-1">
-          <Routes>
-            <Route path="/alerts" element={<AlertDashboard />} />
-            <Route path="/research" element={<ResearchDashboard />} />
-            <Route path="/analytics" element={<Navigate to="/research" replace />} />
-            <Route path="*" element={<Navigate to="/alerts" replace />} />
-          </Routes>
-        </main>
-      </div>
+      <Routes>
+        <Route path="/" element={<MainLayout />}>
+          <Route index element={<Navigate to="/farmer" replace />} />
+          <Route path="farmer" element={<FarmerDashboard />} />
+          <Route path="aviation" element={<Placeholder title="Aviation-Marine Module Coming Soon..." />} />
+          <Route path="gis" element={<Placeholder title="GIS Module Coming Soon..." />} />
+          <Route path="research" element={<ResearchDashboard />} />
+          <Route path="alerts" element={<AlertDashboard />} />
+          <Route path="*" element={<Navigate to="/farmer" replace />} />
+        </Route>
+      </Routes>
     </BrowserRouter>
   );
 }

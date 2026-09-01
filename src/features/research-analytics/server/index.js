@@ -95,9 +95,16 @@ app.get('/api/health', async (_req, res) => {
     });
 });
 if (process.env.NODE_ENV !== 'test') {
-    app.listen(PORT, () => {
-        console.log(`[WeatherGPT Analytics] Server listening on port ${PORT}`);
-        console.log(`[WeatherGPT Analytics] REST Endpoints active under /api/analytics/*`);
-    });
+    import('../../alerts/server/db/connection.js')
+      .then(({ initDb }) => initDb())
+      .then(() => {
+          app.listen(PORT, () => {
+              console.log(`[WeatherGPT Analytics] Server listening on port ${PORT}`);
+              console.log(`[WeatherGPT Analytics] REST Endpoints active under /api/analytics/*`);
+          });
+      })
+      .catch(err => {
+          console.error('[WeatherGPT Analytics] Failed to initialize DB:', err);
+      });
 }
 export default app;

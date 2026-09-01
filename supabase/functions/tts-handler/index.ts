@@ -1,3 +1,4 @@
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 
 const corsHeaders = {
@@ -11,55 +12,67 @@ serve(async (req) => {
   }
 
   try {
-    const { text } = await req.json();
+    const { text, language = 'en-IN' } = await req.json();
     if (!text) throw new Error("No text provided");
 
-    const apiKey = Deno.env.get('MURF_API_KEY');
-    if (!apiKey) throw new Error("MURF_API_KEY not set in Edge Function secrets");
+    console.log("Starting Sarvam TTS Generation for language:", language);
 
-    console.log("Starting Murf TTS Generation...");
+    const LOCALE_MAP: Record<string, string> = {
+      'mr': 'mr-IN', 'marathi': 'mr-IN', 'mr-in': 'mr-IN',
+      'hi': 'hi-IN', 'hindi': 'hi-IN', 'hi-in': 'hi-IN',
+      'en': 'en-IN', 'english': 'en-IN', 'en-in': 'en-IN'
+    };
 
-    // 1. Get Token
-    const tokenRes = await fetch('https://api.murf.ai/v1/auth/token', {
-      method: 'GET',
-      headers: { 'api-key': apiKey }
-    });
+    const normalizedLang = LOCALE_MAP[language.toLowerCase()] || language;
+
+    // Map language to Sarvam format
+    let targetLanguage = "en-IN";
+    let selectedSpeaker = "arav"; // Default male voice for English (let's use anushka for all)
     
-    if (!tokenRes.ok) {
-      const errText = await tokenRes.text();
-      throw new Error(`Murf Auth failed: ${errText}`);
+    if (normalizedLang === 'hi-IN' || normalizedLang === 'mr-IN') {
+      targetLanguage = normalizedLang;
     }
     
-    const { token } = await tokenRes.json();
+    // "priya" works for bulbul:v3
+    selectedSpeaker = "priya";
 
-    // 2. Generate Speech
-    const generateRes = await fetch('https://api.murf.ai/v1/speech/generate', {
+    const sarvamApiKey = Deno.env.get('SARVAM_API_KEY');
+    if (!sarvamApiKey) throw new Error("SARVAM_API_KEY not set in Edge Function secrets");
+
+    const payload = {
+      inputs: [text],
+      target_language_code: targetLanguage,
+      speaker: selectedSpeaker,
+      speech_sample_rate: 8000,
+      enable_preprocessing: true,
+      model: "bulbul:v3"
+    };
+
+    const generateRes = await fetch('https://api.sarvam.ai/text-to-speech', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'token': token
+        'api-subscription-key': sarvamApiKey,
+        'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        voiceId: "en-IN-aarav",
-        style: "Conversational",
-        text: text,
-        rate: 0,
-        pitch: 0,
-        sampleRate: 48000,
-        format: "MP3",
-        channelType: "MONO"
-      })
+      body: JSON.stringify(payload)
     });
 
     if (!generateRes.ok) {
       const errText = await generateRes.text();
-      throw new Error(`Murf Generate failed: ${errText}`);
+      throw new Error(`Sarvam TTS failed: ${errText}`);
     }
 
     const data = await generateRes.json();
     
+    if (!data.audios || data.audios.length === 0) {
+       throw new Error("No audio returned from Sarvam");
+    }
+
+    // Convert base64 string to a data URL that can be played by new Audio()
+    const audioDataUrl = `data:audio/wav;base64,${data.audios[0]}`;
+    
     // Return the audio URL back to the frontend
-    return new Response(JSON.stringify({ audioFile: data.audioFile }), {
+    return new Response(JSON.stringify({ audioFile: audioDataUrl }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error: any) {

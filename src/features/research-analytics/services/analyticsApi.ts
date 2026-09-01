@@ -15,15 +15,14 @@ import {
 const BASE_URL = '/api/analytics';
 
 export async function fetchHistoricalData(
-  location: string | any,
+  location: string,
   startDate: string,
   endDate: string,
   metric: WeatherMetric,
   aggregation: AggregationPeriod
 ): Promise<HistoricalAnalyticsResponse> {
-  const locStr = typeof location === 'string' ? location : JSON.stringify(location);
   const params = new URLSearchParams({
-    location: locStr,
+    location,
     start_date: startDate,
     end_date: endDate,
     metric,
@@ -35,14 +34,13 @@ export async function fetchHistoricalData(
 }
 
 export async function fetchTrendData(
-  location: string | any,
+  location: string,
   startDate: string,
   endDate: string,
   metric: WeatherMetric
 ): Promise<TrendAnalyticsResponse> {
-  const locStr = typeof location === 'string' ? location : JSON.stringify(location);
   const params = new URLSearchParams({
-    location: locStr,
+    location,
     start_date: startDate,
     end_date: endDate,
     metric
@@ -53,16 +51,15 @@ export async function fetchTrendData(
 }
 
 export async function fetchAnomalyData(
-  location: string | any,
+  location: string,
   startDate: string,
   endDate: string,
   metric: WeatherMetric,
   baselineStart?: string,
   baselineEnd?: string
 ): Promise<AnomalyAnalyticsResponse> {
-  const locStr = typeof location === 'string' ? location : JSON.stringify(location);
   const params = new URLSearchParams({
-    location: locStr,
+    location,
     start_date: startDate,
     end_date: endDate,
     metric
@@ -76,17 +73,15 @@ export async function fetchAnomalyData(
 }
 
 export async function fetchComparisonData(
-  locationA: string | any,
-  locationB: string | any,
+  locationA: string,
+  locationB: string,
   startDate: string,
   endDate: string,
   metric: WeatherMetric
 ): Promise<LocationComparisonResponse> {
-  const locStrA = typeof locationA === 'string' ? locationA : JSON.stringify(locationA);
-  const locStrB = typeof locationB === 'string' ? locationB : JSON.stringify(locationB);
   const params = new URLSearchParams({
-    location: locStrA,
-    comparison_location: locStrB,
+    location: locationA,
+    comparison_location: locationB,
     start_date: startDate,
     end_date: endDate,
     metric
@@ -97,13 +92,12 @@ export async function fetchComparisonData(
 }
 
 export async function fetchExtremeEvents(
-  location: string | any,
+  location: string,
   startDate: string,
   endDate: string
 ): Promise<ExtremeEventsResponse> {
-  const locStr = typeof location === 'string' ? location : JSON.stringify(location);
   const params = new URLSearchParams({
-    location: locStr,
+    location,
     start_date: startDate,
     end_date: endDate
   });
@@ -113,23 +107,21 @@ export async function fetchExtremeEvents(
 }
 
 export async function fetchClimateFingerprint(
-  location: string | any
+  location: string
 ): Promise<ClimateFingerprintResponse> {
-  const locStr = typeof location === 'string' ? location : JSON.stringify(location);
-  const params = new URLSearchParams({ location: locStr });
+  const params = new URLSearchParams({ location });
   const res = await fetch(`${BASE_URL}/climate-profile?${params.toString()}`);
   if (!res.ok) throw new Error(`Climate Profile API error: ${res.statusText}`);
   return res.json();
 }
 
 export async function fetchForecastAccuracy(
-  location: string | any,
+  location: string,
   metric: WeatherMetric = 'temperature',
   days: number = 14
 ): Promise<ForecastAccuracyResponse> {
-  const locStr = typeof location === 'string' ? location : JSON.stringify(location);
   const params = new URLSearchParams({
-    location: locStr,
+    location,
     metric,
     days: days.toString()
   });

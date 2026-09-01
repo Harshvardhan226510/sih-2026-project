@@ -5,8 +5,24 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': {
+      '/api/analytics': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+      '/api/search-city': {
         target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+      '/api/farmer': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+      '/api/weather': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+      '/api': {
+        target: 'http://localhost:3000',
         changeOrigin: true,
       },
     },

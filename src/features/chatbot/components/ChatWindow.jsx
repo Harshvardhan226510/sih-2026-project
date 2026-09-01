@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import MessageBubble from './MessageBubble';
 
-const ChatWindow = ({ messages, isLoading }) => {
+const ChatWindow = ({ messages, isLoading, language, speak, stopAudio, isSpeaking }) => {
   const endOfMessagesRef = useRef(null);
 
   useEffect(() => {
@@ -16,7 +16,14 @@ const ChatWindow = ({ messages, isLoading }) => {
         </div>
       ) : (
         messages.map((msg, index) => (
-          <MessageBubble key={index} message={msg} />
+          <MessageBubble 
+            key={index} 
+            message={msg} 
+            language={language}
+            speak={speak}
+            stopAudio={stopAudio}
+            isSpeaking={isSpeaking}
+          />
         ))
       )}
       {isLoading && (

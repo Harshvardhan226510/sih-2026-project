@@ -83,6 +83,80 @@ export const getWeatherObservation = async (locationName: string) => {
   }
 };
 
+export const getHistoricalWeather = async (locationName: string, date: string) => {
+  console.log(`Tool invoked: getHistoricalWeather for ${locationName} on ${date}`);
+  try {
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationName)}&count=1`);
+    const geoData = await geoRes.json();
+    if (!geoData.results || geoData.results.length === 0) {
+      return { error: `Could not find coordinates for '${locationName}'.` };
+    }
+    const lat = geoData.results[0].latitude;
+    const lng = geoData.results[0].longitude;
+    const locName = geoData.results[0].name;
+
+    // Use Open-Meteo Archive API
+    const weatherRes = await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${date}&end_date=${date}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`);
+    const weatherData = await weatherRes.json();
+    
+    if (!weatherData.daily) {
+      return { error: `Could not fetch historical weather data for '${locName}' on ${date}.` };
+    }
+
+    return {
+      source: "live_api_archive",
+      location: { name: locName, lat, lng },
+      historical_observation: {
+        date: date,
+        max_temp_c: weatherData.daily.temperature_2m_max[0],
+        min_temp_c: weatherData.daily.temperature_2m_min[0],
+        total_rainfall_mm: weatherData.daily.precipitation_sum[0]
+      }
+    };
+  } catch (apiError) {
+    console.error("Historical API Error:", apiError);
+    return { error: `Failed to fetch historical data for '${locationName}' due to an internal API error.` };
+  }
+};
+
+export const getWeatherForecast = async (locationName: string) => {
+  console.log(`Tool invoked: getWeatherForecast for ${locationName}`);
+  try {
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationName)}&count=1`);
+    const geoData = await geoRes.json();
+    if (!geoData.results || geoData.results.length === 0) {
+      return { error: `Could not find coordinates for '${locationName}'.` };
+    }
+    const lat = geoData.results[0].latitude;
+    const lng = geoData.results[0].longitude;
+    const locName = geoData.results[0].name;
+
+    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&timezone=auto&forecast_days=3`);
+    const weatherData = await weatherRes.json();
+    
+    if (!weatherData.daily) {
+      return { error: `Could not fetch weather forecast for '${locName}'.` };
+    }
+
+    const forecast = weatherData.daily.time.map((date: string, index: number) => ({
+      date,
+      max_temp_c: weatherData.daily.temperature_2m_max[index],
+      min_temp_c: weatherData.daily.temperature_2m_min[index],
+      rainfall_mm: weatherData.daily.precipitation_sum[index],
+      rain_probability_percent: weatherData.daily.precipitation_probability_max[index]
+    }));
+
+    return {
+      source: "live_api_forecast",
+      location: { name: locName, lat, lng },
+      forecast: forecast
+    };
+  } catch (apiError) {
+    console.error("Forecast API Error:", apiError);
+    return { error: `Failed to fetch forecast for '${locationName}' due to an internal API error.` };
+  }
+};
+
 export const getActiveAlerts = async () => {
   console.log(`Tool invoked: getActiveAlerts`);
   const supabase = getSupabase();

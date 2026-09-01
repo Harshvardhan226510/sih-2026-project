@@ -118,41 +118,41 @@ export const ResearchDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="h-full bg-slate-950 text-slate-100 flex flex-col font-sans overflow-hidden">
       {/* Top Government/Scientific Header */}
-      <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+      <header className="bg-slate-900 border-b border-slate-800 flex-shrink-0 z-10 backdrop-blur-md">
+        <div className="w-full px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3 truncate">
+            <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 flex-shrink-0">
               <CloudSun className="w-6 h-6" />
             </div>
-            <div>
+            <div className="truncate">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-base sm:text-lg tracking-tight text-white">WeatherGPT</span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800">
-                  Research & Analytics Module
+                <span className="font-bold text-base sm:text-lg tracking-tight text-white truncate">WeatherGPT</span>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800 hidden lg:inline-block truncate">
+                  Research & Analytics
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 hidden sm:block">
-                Smart India Hackathon • Meteorological Evidence, Climate Analytics & Anomaly Detection
+              <p className="text-[11px] text-slate-400 hidden xl:block truncate">
+                Smart India Hackathon • Climate Analytics
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-2 text-xs text-slate-400 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="hidden lg:flex items-center gap-2 text-xs text-slate-400 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Data Engine: <strong className="text-slate-200">ERA5 / IMD Grid</strong></span>
+              <span>ERA5 / IMD</span>
             </div>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-800">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              API Connected
+              <span className="hidden sm:inline">API Connected</span>
             </span>
           </div>
         </div>
 
         {/* Horizontal Tab Navigation Bar */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-x-auto border-t border-slate-800/80 scrollbar-none">
+        <div className="w-full px-4 overflow-x-auto border-t border-slate-800/80 scrollbar-none">
           <nav className="flex space-x-1 py-2">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -177,7 +177,7 @@ export const ResearchDashboard: React.FC = () => {
       </header>
 
       {/* Main Content Workspace */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="flex-1 w-full overflow-y-auto px-4 py-6 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
         {activeTab === 'overview' && (
           <ResearchOverview
             historicalData={historicalData}
@@ -270,17 +270,17 @@ export const ResearchDashboard: React.FC = () => {
       </main>
 
       {/* Scientific Footer */}
-      <footer className="bg-slate-900 border-t border-slate-800 text-xs text-slate-400 py-4 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div>
+      <footer className="bg-slate-900 border-t border-slate-800 text-xs text-slate-400 py-4 mt-auto flex-shrink-0">
+        <div className="w-full px-4 flex flex-col xl:flex-row items-center justify-between gap-2">
+          <div className="truncate">
             WeatherGPT SIH Research & Analytics • Numerical Weather Intelligence Engine
           </div>
-          <div className="flex items-center gap-4 text-[11px]">
+          <div className="flex items-center gap-4 text-[11px] truncate">
             <span>ERA5 Reanalysis (0.1°)</span>
-            <span>•</span>
-            <span>IMD Reference Normals</span>
-            <span>•</span>
-            <span>Strict Numerical Integrity</span>
+            <span className="hidden sm:inline">•</span>
+            <span className="hidden sm:inline">IMD Reference Normals</span>
+            <span className="hidden lg:inline">•</span>
+            <span className="hidden lg:inline">Strict Numerical Integrity</span>
           </div>
         </div>
       </footer>

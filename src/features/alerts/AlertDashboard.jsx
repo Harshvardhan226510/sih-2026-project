@@ -21,7 +21,7 @@ export function AlertDashboard() {
   const [location, setLocation] = useState({ state: '', district: '' });
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', 'dark');
+    // Removed forced dark theme to sync with global layout
   }, []);
 
   useEffect(() => {

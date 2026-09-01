@@ -4,14 +4,16 @@ import AudioInput from './components/AudioInput';
 import SuggestedQueries from './components/SuggestedQueries';
 import { useChat } from './hooks/useChat';
 import { useSpeech } from './hooks/useSpeech';
+import { useWeather } from '../../context/WeatherContext';
 
-import './Module1View.css'; // Let's add some styles later
+import './Module1View.css';
 
 const Module1View = () => {
   const { messages, sendMessage, isLoading } = useChat();
   const [inputText, setInputText] = useState('');
+  const { croppedSpatialContext } = useWeather();
+  const processedContextRef = useRef(null);
   
-  // Use a ref to hold the speak function so the callback can access it
   const speakRef = useRef(null);
 
   const handleSpeechResult = async (transcript) => {
@@ -24,12 +26,27 @@ const Module1View = () => {
 
   const { isRecording, startRecording, stopRecording, speak } = useSpeech(handleSpeechResult);
   
-  // Update the ref whenever speak changes (though it shouldn't change)
   useEffect(() => {
     speakRef.current = speak;
   }, [speak]);
 
+  useEffect(() => {
+    if (croppedSpatialContext && processedContextRef.current !== croppedSpatialContext) {
+      processedContextRef.current = croppedSpatialContext;
 
+      const spatialPrompt =
+        `📍 SPATIAL MAP REGION ANALYSIS REQUEST\n` +
+        `Region Center: ${croppedSpatialContext.center.lat}°N, ${croppedSpatialContext.center.lon}°E\n` +
+        `Geographic Extent: ${croppedSpatialContext.bounds.southWest} to ${croppedSpatialContext.bounds.northEast}\n` +
+        `Active GIS Map Layers: ${croppedSpatialContext.activeLayers.join(', ')}\n` +
+        (croppedSpatialContext.alertsCount > 0
+          ? `Active SACHET Warnings in Region: ${croppedSpatialContext.alertsCount} Alert(s) (${croppedSpatialContext.alertsSummary})\n`
+          : `Active SACHET Warnings in Region: None\n`) +
+        `Please provide a detailed meteorological analysis of this selected geographic area, including weather risks, temperature trends, wind patterns, and agricultural advisories.`;
+
+      sendMessage(spatialPrompt);
+    }
+  }, [croppedSpatialContext]);
 
   const handleSend = () => {
     if (inputText.trim()) {

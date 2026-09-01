@@ -49,8 +49,8 @@ export function AlertDashboard() {
     }
   }
 
-  // Count active alerts near user (roughly matching district)
   const localActiveCount = results.filter(a => a.status === 'ACTIVE' && location.district && a.area?.includes(location.district)).length;
+  const activeAlertsCount = results.filter(a => a.status === 'ACTIVE').length;
 
   return (
     <div className="dashboard">
@@ -60,56 +60,71 @@ export function AlertDashboard() {
         lastSync={lastSync}
         onSync={sync}
       />
+
       {error && (
-        <div className="sync-error" role="alert">
-          <span>⚠️</span> Sync failed: {error}. Showing cached data.
+        <div className="sync-error-banner" role="alert">
+          <span>⚠️</span>
+          <span>Sync issue: {error}. Showing cached meteorological alerts.</span>
         </div>
       )}
 
-      <div className="dashboard-body">
-        <div className="dashboard-sidebar">
-          <LocationSettings location={location} onSave={handleSaveLocation} />
-          <AlertSearch query={query} setQuery={setQuery} />
-          <AlertFilters
-            filters={filters}
-            setFilters={setFilters}
-            uniqueEvents={uniqueEvents}
-            uniqueAreas={uniqueAreas}
-          />
-        </div>
+      <div className="dashboard-content-wrapper">
+        <div className="dashboard-body">
+          {/* Left Instrument Control Column */}
+          <aside className="dashboard-sidebar">
+            <LocationSettings location={location} onSave={handleSaveLocation} />
+            <AlertSearch query={query} setQuery={setQuery} />
+            <AlertFilters
+              filters={filters}
+              setFilters={setFilters}
+              uniqueEvents={uniqueEvents}
+              uniqueAreas={uniqueAreas}
+            />
+          </aside>
 
-        <div className="dashboard-main">
-          <div className="feed-header">
-            <h2 className="feed-intro-title">Your Alerts</h2>
-            <p className="feed-intro-count">
-              {localActiveCount > 0
-                ? `${localActiveCount} active near you`
-                : `${results.length} total alert${results.length !== 1 ? 's' : ''}`}
-            </p>
-            <AlertSummaryCards summary={summary} />
-          </div>
-          <AlertFeed
-            alerts={results}
-            selectedId={selected?.id}
-            onSelect={(alert) => {
-              if (selected?.id === alert.id) {
-                setSelected(null);
-              } else {
-                setSelected(alert);
-              }
-            }}
-            location={location}
-          />
-        </div>
+          {/* Right Primary Intelligence Workspace */}
+          <main className="dashboard-main">
+            {/* Section 8: Main Heading & Severity Summary */}
+            <div className="workspace-header">
+              <div className="workspace-title-row">
+                <h2 className="workspace-title">Active Weather Alerts</h2>
+                <span className="workspace-count-meta">
+                  {localActiveCount > 0
+                    ? `${localActiveCount} active near you • ${activeAlertsCount} in feed`
+                    : `${activeAlertsCount} active alerts`}
+                </span>
+              </div>
+              <AlertSummaryCards summary={summary} />
+            </div>
 
-        {selected && (
-          <AlertDetail
-            alert={selected}
-            onClose={() => setSelected(null)}
-            networkOnline={network.online}
-          />
-        )}
+            {/* Alert Feed (Single Primary Alert Hero + 2-Col Secondary Grid) */}
+            <AlertFeed
+              alerts={results}
+              selectedId={selected?.id}
+              onSelect={(alert) => {
+                if (selected?.id === alert.id) {
+                  setSelected(null);
+                } else {
+                  setSelected(alert);
+                }
+              }}
+              location={location}
+              loading={syncStatus === 'syncing' && alerts.length === 0}
+            />
+          </main>
+        </div>
       </div>
+
+      {/* Slide-in Detail Drawer */}
+      {selected && (
+        <AlertDetail
+          alert={selected}
+          onClose={() => setSelected(null)}
+          networkOnline={network.online}
+        />
+      )}
     </div>
   );
 }
+
+export default AlertDashboard;

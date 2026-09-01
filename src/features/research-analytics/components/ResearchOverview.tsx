@@ -30,6 +30,7 @@ import {
   Bar 
 } from 'recharts';
 import { DataProvenance } from './DataProvenance.js';
+import { KeyInsightsSummary } from './KeyInsightsSummary.js';
 
 interface Props {
   historicalData: HistoricalAnalyticsResponse | null;
@@ -60,8 +61,58 @@ export const ResearchOverview: React.FC<Props> = ({
   const anomalyPct = anomalyData?.anomalyPercentage ?? 0;
   const extremeCount = extremeData?.totalEvents ?? 0;
 
+  // Feature 7: Deterministic Research Insights Generation
+  const keyInsightsList = [];
+
+  if (trendData) {
+    keyInsightsList.push({
+      id: 'insight-trend',
+      type: 'trend' as const,
+      title: `${trendData.trendDirection} Climate Trajectory`,
+      description: `${trendData.slopePerYear > 0 ? '+' : ''}${trendData.slopePerYear} ${unit}/year slope with ${trendData.percentageChange > 0 ? '+' : ''}${trendData.percentageChange}% period change.`,
+      metricValue: `${trendData.significance?.label || 'Observed'} (p = ${trendData.significance?.pValue ?? '1.0'})`,
+      isSignificant: trendData.significance?.isSignificant
+    });
+  }
+
+  if (anomalyData) {
+    keyInsightsList.push({
+      id: 'insight-anomaly',
+      type: 'anomaly' as const,
+      title: `Anomaly: ${anomalyData.badgeLabel}`,
+      description: `Observed ${anomalyData.observedValue} ${unit} vs baseline ${anomalyData.historicalBaseline} ${unit} (Z=${anomalyData.zScore}σ).`,
+      metricValue: `${anomalyData.detectedAnomaliesCount} significant day-level anomalies`,
+      isSignificant: Math.abs(anomalyData.zScore) >= 2.0
+    });
+  }
+
+  if (extremeData) {
+    keyInsightsList.push({
+      id: 'insight-extreme',
+      type: 'extreme' as const,
+      title: `${extremeData.totalEvents} Extreme Incidents`,
+      description: `Detected across ${extremeData.timeRange.start} → ${extremeData.timeRange.end}. Heavy rain: ${extremeData.breakdownByType['HEAVY_RAINFALL'] || 0}, Heat: ${extremeData.breakdownByType['EXTREME_HEAT'] || 0}.`,
+      metricValue: extremeData.recurrenceAnalysis?.averageIntervalDays 
+        ? `Avg interval: ${extremeData.recurrenceAnalysis.averageIntervalDays} days`
+        : undefined
+    });
+  }
+
+  if (historicalData?.summary) {
+    keyInsightsList.push({
+      id: 'insight-dist',
+      type: 'distribution' as const,
+      title: `Distribution (P10–P90)`,
+      description: `Median: ${historicalData.summary.median} ${unit}, IQR: ${historicalData.summary.iqr} ${unit}, 95th Percentile: ${historicalData.summary.p95} ${unit}.`,
+      metricValue: `CV: ${historicalData.summary.variabilityCv || 0}%`
+    });
+  }
+
   return (
     <div className="space-y-6">
+      {/* Feature 7: Key Insights Banner */}
+      <KeyInsightsSummary insights={keyInsightsList} />
+
       {/* Top KPI Cards Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Mean Value */}
@@ -82,9 +133,9 @@ export const ResearchOverview: React.FC<Props> = ({
             </span>
             <span className="text-sm font-medium text-slate-400">{unit}</span>
           </div>
-          <div className="mt-2 text-xs text-slate-400 flex items-center gap-1">
-            <span>Historical average:</span>
-            <span className="font-mono text-slate-300 font-semibold">{historicalData?.summary.median ?? 0} {unit}</span>
+          <div className="mt-2 text-xs text-slate-400 flex items-center gap-1 font-mono">
+            <span>Historical median:</span>
+            <span className="text-slate-300 font-semibold">{historicalData?.summary.median ?? 0} {unit}</span>
           </div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl pointer-events-none" />
         </div>
@@ -103,9 +154,9 @@ export const ResearchOverview: React.FC<Props> = ({
             </span>
             <span className="text-sm font-medium text-slate-400">{unit}</span>
           </div>
-          <div className="mt-2 text-xs text-slate-400 flex items-center gap-1">
+          <div className="mt-2 text-xs text-slate-400 flex items-center gap-1 font-mono">
             <span>95th Percentile:</span>
-            <span className="font-mono text-slate-300 font-semibold">{historicalData?.summary.p95 ?? 0} {unit}</span>
+            <span className="text-slate-300 font-semibold">{historicalData?.summary.p95 ?? 0} {unit}</span>
           </div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full blur-2xl pointer-events-none" />
         </div>
@@ -134,7 +185,7 @@ export const ResearchOverview: React.FC<Props> = ({
           </div>
           <div className="mt-2">
             <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-              {anomalyData?.classification.replace(/_/g, ' ') || 'NORMAL'}
+              {anomalyData?.badgeLabel || 'NORMAL'}
             </span>
           </div>
         </div>
@@ -156,9 +207,9 @@ export const ResearchOverview: React.FC<Props> = ({
             </span>
             <span className="text-xs text-slate-400 font-medium">recorded</span>
           </div>
-          <div className="mt-2 text-xs text-slate-400 flex items-center gap-1">
+          <div className="mt-2 text-xs text-slate-400 flex items-center gap-1 font-mono">
             <span>Severe / Extreme:</span>
-            <span className="font-semibold text-amber-300 font-mono">
+            <span className="font-semibold text-amber-300">
               {(extremeData?.breakdownBySeverity['EXTREME'] || 0) + (extremeData?.breakdownBySeverity['VERY_SEVERE'] || 0)} events
             </span>
           </div>
@@ -185,7 +236,7 @@ export const ResearchOverview: React.FC<Props> = ({
                 ? 'bg-cyan-950/60 text-cyan-300 border-cyan-800/60'
                 : 'bg-slate-800 text-slate-300 border-slate-700'
             }`}>
-              Trend: {trendData?.trendDirection || 'STABLE'} ({trendData?.slopePerYear > 0 ? '+' : ''}{trendData?.slopePerYear || 0} {unit}/yr)
+              Trend: {trendData?.trendDirection || 'STABLE'} ({(trendData?.slopePerYear ?? 0) > 0 ? '+' : ''}{trendData?.slopePerYear ?? 0} {unit}/yr)
             </span>
             <button
               onClick={() => onNavigateTab('trends')}
@@ -210,7 +261,7 @@ export const ResearchOverview: React.FC<Props> = ({
               <YAxis stroke="#64748b" tick={{ fontSize: 11 }} />
               <Tooltip
                 contentStyle={{ backgroundColor: '#0b1329', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
-                formatter={(val: any, name: string) => [`${val} ${unit}`, name === 'actual' ? 'Observed' : 'Trend Slope']}
+                formatter={(val: any, name: any) => [`${val} ${unit}`, name === 'actual' ? 'Observed' : 'Trend Slope']}
               />
               <Area type="monotone" dataKey="actual" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#trendGradient)" name="actual" />
               <Area type="monotone" dataKey="trendLine" stroke="#f59e0b" strokeWidth={2} strokeDasharray="4 4" fill="none" name="trendLine" />
@@ -228,7 +279,7 @@ export const ResearchOverview: React.FC<Props> = ({
               <Layers className="w-4 h-4 text-emerald-400" />
               Seasonal {metric} Distribution
             </h3>
-            <span className="text-xs text-slate-400">4-Season Climatological Normal</span>
+            <span className="text-xs text-slate-400 font-mono">Indian Meteorological Normal</span>
           </div>
 
           <div className="h-56 w-full mt-3">
@@ -294,7 +345,7 @@ export const ResearchOverview: React.FC<Props> = ({
           <div className="mt-4 pt-3 border-t border-slate-800/80">
             <div className="text-xs font-semibold text-slate-300 flex items-center gap-1.5 mb-2">
               <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-              Automated Analytical Insights
+              Verified Analytical Syntheses
             </div>
             <ul className="space-y-1.5 text-xs text-slate-300">
               <li className="flex items-start gap-1.5">

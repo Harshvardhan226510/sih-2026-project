@@ -1,13 +1,57 @@
 export const SEVERITY_CONFIG = {
-  Extreme: { color: 'var(--severity-extreme)', bg: 'rgba(239, 68, 68, 0.15)', icon: '⚠', label: 'EXTREME', priority: 0 },
-  Severe: { color: 'var(--severity-severe)', bg: 'rgba(249, 115, 22, 0.15)', icon: '🔶', label: 'SEVERE', priority: 1 },
-  Moderate: { color: 'var(--severity-moderate)', bg: 'rgba(234, 179, 8, 0.15)', icon: '🔸', label: 'MODERATE', priority: 2 },
-  Minor: { color: 'var(--severity-minor)', bg: 'rgba(59, 130, 246, 0.15)', icon: 'ℹ', label: 'MINOR', priority: 3 },
-  Unknown: { color: 'var(--text-muted)', bg: 'rgba(100, 116, 139, 0.15)', icon: '?', label: 'UNKNOWN', priority: 4 },
+  Extreme: { 
+    color: '#ef4444', 
+    bg: 'rgba(239, 68, 68, 0.12)', 
+    border: 'rgba(239, 68, 68, 0.35)', 
+    badgeBg: 'rgba(239, 68, 68, 0.9)', 
+    icon: '▲', 
+    label: 'EXTREME', 
+    priority: 0 
+  },
+  Severe: { 
+    color: '#f97316', 
+    bg: 'rgba(249, 115, 22, 0.12)', 
+    border: 'rgba(249, 115, 22, 0.35)', 
+    badgeBg: 'rgba(249, 115, 22, 0.9)', 
+    icon: '◆', 
+    label: 'SEVERE', 
+    priority: 1 
+  },
+  Moderate: { 
+    color: '#eab308', 
+    bg: 'rgba(234, 179, 8, 0.12)', 
+    border: 'rgba(234, 179, 8, 0.35)', 
+    badgeBg: 'rgba(234, 179, 8, 0.9)', 
+    icon: '●', 
+    label: 'MODERATE', 
+    priority: 2 
+  },
+  Minor: { 
+    color: '#38bdf8', 
+    bg: 'rgba(56, 189, 248, 0.12)', 
+    border: 'rgba(56, 189, 248, 0.35)', 
+    badgeBg: 'rgba(56, 189, 248, 0.9)', 
+    icon: 'ℹ', 
+    label: 'MINOR', 
+    priority: 3 
+  },
+  Unknown: { 
+    color: '#94a3b8', 
+    bg: 'rgba(148, 163, 184, 0.12)', 
+    border: 'rgba(148, 163, 184, 0.35)', 
+    badgeBg: 'rgba(148, 163, 184, 0.9)', 
+    icon: '—', 
+    label: 'UNKNOWN', 
+    priority: 4 
+  },
 };
+
 export function getSeverityConfig(severity) {
-  return SEVERITY_CONFIG[severity] || SEVERITY_CONFIG.Unknown;
+  if (!severity) return SEVERITY_CONFIG.Unknown;
+  const key = Object.keys(SEVERITY_CONFIG).find(k => k.toLowerCase() === severity.toLowerCase());
+  return key ? SEVERITY_CONFIG[key] : SEVERITY_CONFIG.Unknown;
 }
+
 export function formatTimeAgo(dateStr) {
   if (!dateStr) return '';
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -19,41 +63,62 @@ export function formatTimeAgo(dateStr) {
   const days = Math.floor(hrs / 24);
   return `${days}d ago`;
 }
+
 export function formatTime(dateStr) {
   if (!dateStr) return '—';
-  return new Date(dateStr).toLocaleString('en-IN', {
-    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false,
+  const d = new Date(dateStr);
+  return d.toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
   });
 }
 
+export function formatDateTime(dateStr) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+}
+
+/**
+ * Curated high-resolution atmospheric weather imagery
+ */
 export function getWeatherImageForEvent(event) {
   const e = (event || '').toLowerCase();
   
-  if (e.includes('rain') || e.includes('shower')) {
-    return 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=800&q=80&auto=format&fit=crop';
+  if (e.includes('rain') || e.includes('shower') || e.includes('monsoon')) {
+    return 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=1200&q=85&auto=format&fit=crop';
   }
   if (e.includes('thunder') || e.includes('lightning')) {
-    return 'https://images.unsplash.com/photo-1429552077091-836152271555?w=800&q=80&auto=format&fit=crop';
+    return 'https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?w=1200&q=85&auto=format&fit=crop';
   }
-  if (e.includes('heat') || e.includes('hot') || e.includes('temperature')) {
-    return 'https://images.unsplash.com/photo-1504370805625-d32c54b16100?w=800&q=80&auto=format&fit=crop';
+  if (e.includes('heat') || e.includes('temperature') || e.includes('warm')) {
+    return 'https://images.unsplash.com/photo-1504370805625-d32c54b16100?w=1200&q=85&auto=format&fit=crop';
   }
-  if (e.includes('flood') || e.includes('water')) {
-    return 'https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?w=800&q=80&auto=format&fit=crop';
+  if (e.includes('flood') || e.includes('inundation') || e.includes('water')) {
+    return 'https://images.unsplash.com/photo-1547683905-f686c993aae5?w=1200&q=85&auto=format&fit=crop';
   }
-  if (e.includes('fog') || e.includes('mist')) {
-    return 'https://images.unsplash.com/photo-1487621167305-5d248087c724?w=800&q=80&auto=format&fit=crop';
+  if (e.includes('fog') || e.includes('mist') || e.includes('dense fog')) {
+    return 'https://images.unsplash.com/photo-1487621167305-5d248087c724?w=1200&q=85&auto=format&fit=crop';
   }
-  if (e.includes('cyclone') || e.includes('storm') || e.includes('wind')) {
-    return 'https://images.unsplash.com/photo-1495615080073-6b89c9839ce0?w=800&q=80&auto=format&fit=crop';
+  if (e.includes('cyclone') || e.includes('storm') || e.includes('depression') || e.includes('gale')) {
+    return 'https://images.unsplash.com/photo-1527482797697-8795b05a13fe?w=1200&q=85&auto=format&fit=crop';
   }
-  if (e.includes('hail') || e.includes('snow') || e.includes('cold')) {
-    return 'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?w=800&q=80&auto=format&fit=crop';
+  if (e.includes('wind') || e.includes('squall')) {
+    return 'https://images.unsplash.com/photo-1505672678556-3a789ef23395?w=1200&q=85&auto=format&fit=crop';
   }
-  if (e.includes('dust')) {
-    return 'https://images.unsplash.com/photo-1545042679-41d22b2ca130?w=800&q=80&auto=format&fit=crop';
+  if (e.includes('hail') || e.includes('snow') || e.includes('cold') || e.includes('frost')) {
+    return 'https://images.unsplash.com/photo-1517299321609-52687d1bc55a?w=1200&q=85&auto=format&fit=crop';
+  }
+  if (e.includes('dust') || e.includes('sand')) {
+    return 'https://images.unsplash.com/photo-1545042679-41d22b2ca130?w=1200&q=85&auto=format&fit=crop';
   }
   
-  // Default fallback (atmospheric clouds)
-  return 'https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?w=800&q=80&auto=format&fit=crop';
+  // Default atmospheric clouds
+  return 'https://images.unsplash.com/photo-1534088568595-a066f410bcda?w=1200&q=85&auto=format&fit=crop';
 }

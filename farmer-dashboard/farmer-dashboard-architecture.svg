@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="chart-title chart-desc">
+  <title id="chart-title">Farmer Advisory Dashboard Architecture</title>
+  <desc id="chart-desc">Three-layer architecture diagram for the WeatherGPT farmer advisory dashboard.</desc>
+  <defs>
+    <linearGradient id="front" x1="0" x2="1"><stop stop-color="#fff1dc"/><stop offset="1" stop-color="#f7e0c0"/></linearGradient>
+    <linearGradient id="core" x1="0" x2="1"><stop stop-color="#e4f5dd"/><stop offset="1" stop-color="#cfebc2"/></linearGradient>
+    <linearGradient id="data" x1="0" x2="1"><stop stop-color="#fff5cb"/><stop offset="1" stop-color="#f7e7ae"/></linearGradient>
+    <linearGradient id="screen" x1="0" x2="1"><stop stop-color="#082f35"/><stop offset="1" stop-color="#17504d"/></linearGradient>
+    <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="3" orient="auto"><path d="M0 0L9 3L0 6Z" fill="#101515"/></marker>
+    <style>
+      .t { font-family: Arial, Helvetica, sans-serif; fill: #101515; }
+      .layer { font-size: 28px; font-weight: 700; }.sub { font-size: 18px; }.head { font-size: 24px; font-weight: 700; }.body { font-size: 19px; }.small { font-size: 16px; }
+      .box { stroke: #59635d; stroke-width: 1.7; }.zone { stroke: #353b37; stroke-width: 1.7; stroke-dasharray: 5 5; }.wire { stroke: #101515; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }.wire-thin { stroke: #101515; stroke-width: 1.8; fill: none; marker-end: url(#arrow); }.dash { stroke-dasharray: 7 5; }
+    </style>
+  </defs>
+  <rect width="1920" height="1080" fill="#fdfcf7"/>
+
+  <rect class="zone" x="22" y="20" width="1876" height="336" rx="18" fill="url(#front)"/>
+  <text class="t layer" x="42" y="58">1. FRONTEND LAYER <tspan font-weight="400">(React 19 + Vite)</tspan></text>
+  <g>
+    <circle cx="154" cy="151" r="46" fill="#54717c"/><circle cx="154" cy="128" r="12" fill="#f7e5c9"/><path d="M124 171q30-44 60 0v15h-60z" fill="#2d5362"/><path d="M101 215h106" stroke="#54717c" stroke-width="6" stroke-linecap="round"/>
+    <path d="M111 204q-19-17-28-38M197 204q19-17 28-38" stroke="#73b3c3" stroke-width="5" fill="none" marker-end="url(#arrow)"/>
+    <text class="t body" text-anchor="middle" x="154" y="260">Farmer interactions</text><text class="t small" text-anchor="middle" x="154" y="284">Location · crop · language</text><text class="t small" text-anchor="middle" x="154" y="305">forecast-day selection</text>
+  </g>
+  <rect class="box" x="275" y="122" width="185" height="115" rx="16" fill="#f7c992"/><text class="t head" text-anchor="middle" x="367" y="160">Dashboard</text><text class="t head" text-anchor="middle" x="367" y="187">Inputs</text><text class="t small" text-anchor="middle" x="367" y="213">browser events</text>
+  <path class="wire" d="M220 178H275"/><path class="wire" d="M460 178H515"/>
+
+  <rect class="box" x="515" y="78" width="755" height="247" rx="16" fill="#fbfbf8"/><text class="t head" text-anchor="middle" x="892" y="111">Farmer Advisory Dashboard — src/main.jsx</text><rect x="537" y="127" width="711" height="176" rx="8" fill="url(#screen)"/>
+  <text x="558" y="150" font-family="Arial" font-size="13" font-weight="700" fill="#d6ebe8">WELCOME, FARMER</text><rect x="558" y="164" width="188" height="23" rx="11" fill="#082026"/><text x="574" y="180" font-family="Arial" font-size="11" font-weight="700" fill="#fff">FARMER ADVISORY</text>
+  <text x="558" y="217" font-family="Arial" font-size="26" font-weight="700" fill="#fff">Rain expected — delay spraying</text><rect x="558" y="232" width="400" height="17" rx="4" fill="#123e42"/><text x="568" y="245" font-family="Arial" font-size="10" fill="#d7e8e7">Do now: Wait until 24 hours after the rain clears.</text><rect x="558" y="256" width="400" height="17" rx="4" fill="#123e42"/><text x="568" y="269" font-family="Arial" font-size="10" fill="#d7e8e7">Why: Rain could wash treatment off leaves.</text><path d="M558 289q75-24 150-7t145-10" stroke="#e6f0ee" stroke-width="2" fill="none"/>
+  <rect x="985" y="151" width="239" height="105" rx="12" fill="#ffffff" opacity=".24" stroke="#d7efeb"/><text x="1002" y="173" font-family="Arial" font-size="12" font-weight="700" fill="#fff">Nashik, Maharashtra</text><text x="1002" y="218" font-family="Arial" font-size="42" font-weight="700" fill="#fff">23°C</text><text x="1003" y="239" font-family="Arial" font-size="11" fill="#e5f3f1">17 km/h wind · 71% rain · 91% humidity</text><rect x="985" y="266" width="239" height="23" rx="8" fill="#ffffff" opacity=".20"/><text x="1002" y="282" font-family="Arial" font-size="11" font-weight="700" fill="#fff">Cotton · Hold spraying · Medium priority</text>
+
+  <rect class="box" x="1320" y="76" width="530" height="108" rx="14" fill="#f5f5f4"/><text class="t head" x="1342" y="111">UI Components</text><text class="t body" x="1342" y="140">• Header · LocationSearch · AddCrop</text><text class="t body" x="1342" y="166">• PrimaryAdvisory · Sidebar · MandiSchemes</text>
+  <rect class="box" x="1320" y="203" width="530" height="122" rx="14" fill="#f5f5f4"/><text class="t head" x="1342" y="237">Client State &amp; Persistence</text><text class="t body" x="1342" y="266">• place, forecast day, selected crop, UI state</text><text class="t body" x="1342" y="292">• localStorage: dashboard snapshot + language</text>
+  <path class="wire" d="M1270 129H1320"/><path class="wire" d="M1270 264H1320"/>
+
+  <rect class="zone" x="22" y="394" width="1876" height="300" rx="18" fill="url(#core)"/>
+  <text class="t layer" x="42" y="433">2. CORE PROCESSING &amp; ADVISORY LAYER</text><text class="t sub" x="42" y="458">Express 5 API · Vercel serverless entry · deterministic advisory logic</text>
+  <rect class="box" x="688" y="408" width="545" height="52" rx="12" fill="#f7f7f4"/><text class="t head" text-anchor="middle" x="960" y="442">Express Application — server/src/server.js</text>
+  <path class="wire" d="M892 325V408"/><path class="wire" d="M1480 325V384H1140V408"/><text class="t small" x="758" y="385">HTTP requests / responses</text><text class="t small" x="1260" y="385">Location &amp; dashboard data</text>
+  <rect class="box" x="85" y="490" width="530" height="166" rx="15" fill="#d1ebc7"/><text class="t head" text-anchor="middle" x="350" y="524">[A. ACTIVE DASHBOARD API]</text><text class="t sub" text-anchor="middle" x="350" y="549">Routes currently called by React</text><text class="t body" x="113" y="580">• GET /api/weather?lat=&amp;lon=</text><text class="t body" x="113" y="608">• GET /api/search-city?city=</text><text class="t body" x="113" y="636">• Passes Open-Meteo payload / location matches</text>
+  <rect class="box" x="695" y="490" width="530" height="166" rx="15" fill="#d1ebc7"/><text class="t head" text-anchor="middle" x="960" y="524">[B. ADVISORY PRESENTATION]</text><text class="t sub" text-anchor="middle" x="960" y="549">Current dashboard logic in main.jsx</text><text class="t body" x="723" y="580">• Maps raw weather to current + seven-day forecast</text><text class="t body" x="723" y="608">• Rain probability &gt; 50% delays spraying</text><text class="t body" x="723" y="636">• i18n translates farm advice (EN / HI / MR)</text>
+  <rect class="box dash" x="1305" y="490" width="530" height="166" rx="15" fill="#d9ead2"/><text class="t head" text-anchor="middle" x="1570" y="524">[C. ADVANCED FARMER SERVICES*]</text><text class="t sub" text-anchor="middle" x="1570" y="549">Implemented backend endpoints, pending UI connection</text><text class="t body" x="1333" y="580">• /api/farmer/dashboard · crops CRUD · refresh</text><text class="t body" x="1333" y="608">• Rule priority: rain → wind → high temperature</text><text class="t body" x="1333" y="636">• Weather cache read/write; bearer-token auth</text>
+  <path class="wire-thin" d="M615 573H695"/><path class="wire-thin dash" d="M1225 573H1305"/><path class="wire" d="M960 460V490"/>
+
+  <rect class="zone" x="22" y="730" width="1876" height="316" rx="18" fill="url(#data)"/>
+  <text class="t layer" x="42" y="770">3. DATA &amp; INTEGRATION LAYER <tspan font-weight="400">(External APIs, Cache &amp; Farmer Data)</tspan></text>
+  <rect class="box" x="85" y="801" width="610" height="210" rx="15" fill="#f8e6ac"/><text class="t head" text-anchor="middle" x="390" y="835">[EXTERNAL WEATHER &amp; LOCATION APIs]</text><circle cx="138" cy="881" r="19" fill="#4e91bb"/><text x="132" y="888" font-family="Arial" font-size="22" fill="#fff">☁</text><text class="t head" x="175" y="889">Open-Meteo Forecast API</text><text class="t body" x="175" y="916">Current temperature, humidity, wind, rain &amp; 7-day forecast</text><path d="M110 938H671" stroke="#aa9561"/><circle cx="138" cy="966" r="19" fill="#609c74"/><text x="130" y="973" font-family="Arial" font-size="20" fill="#fff">⌖</text><text class="t head" x="175" y="974">Open-Meteo Geocoding API</text><text class="t body" x="175" y="1001">Village / district search → normalized place name + coordinates</text>
+  <rect class="box dash" x="795" y="801" width="480" height="210" rx="15" fill="#d8e9f3"/><text class="t head" text-anchor="middle" x="1035" y="835">[SUPABASE DATA SERVICES*]</text><text class="t body" x="825" y="875">• Auth validates Supabase bearer token</text><text class="t body" x="825" y="906">• farmer_profiles · crops · farmer_crops</text><text class="t body" x="825" y="937">• weather_snapshots cache (60 min TTL)</text><text class="t body" x="825" y="968">• advisories · market_prices · Row Level Security</text><text class="t small" x="825" y="995">* Migration / React integration is pending validation.</text>
+  <rect class="box dash" x="1375" y="801" width="460" height="92" rx="15" fill="#b9d99e"/><text class="t head" text-anchor="middle" x="1605" y="837">Dashboard Enrichment*</text><text class="t body" text-anchor="middle" x="1605" y="868">Mandi prices &amp; government schemes</text><rect class="box" x="1375" y="915" width="460" height="96" rx="15" fill="#b9d99e"/><text class="t head" text-anchor="middle" x="1605" y="951">Current Runtime Note</text><text class="t body" text-anchor="middle" x="1605" y="978">No dummy fallback weather data</text>
+  <path class="wire" d="M615 656V723H390V801"/><path class="wire-thin dash" d="M1570 656V750H1035V801"/><path class="wire-thin dash" d="M1275 906H1375"/>
+  <text class="t small" x="42" y="1069">Solid arrows show the current dashboard path. Dashed boxes / arrows mark built capabilities that are not yet connected to the displayed React dashboard.</text>
+</svg>

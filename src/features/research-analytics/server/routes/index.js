@@ -10,6 +10,8 @@ import forecastAccuracyRoutes from './forecastAccuracy.js';
 import eventReplayRoutes from './eventReplay.js';
 import researchQueryRoutes from './researchQuery.js';
 import metadataRoutes from './metadata.js';
+import explainRoutes from './explain.js';
+import recentQueriesRoutes from './recentQueries.js';
 
 const router = Router();
 
@@ -23,5 +25,7 @@ router.use('/forecast-accuracy', forecastAccuracyRoutes);
 router.use('/event-replay', eventReplayRoutes);
 router.use('/query', researchQueryRoutes);
 router.use('/metadata', metadataRoutes);
+router.use('/explain', explainRoutes);
+router.use('/recent-queries', recentQueriesRoutes);
 
 export default router;

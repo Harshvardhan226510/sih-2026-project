@@ -6,7 +6,8 @@ import {
   fetchComparisonData, 
   fetchExtremeEvents, 
   fetchClimateFingerprint, 
-  fetchForecastAccuracy 
+  fetchForecastAccuracy,
+  saveRecentQuery 
 } from './services/analyticsApi.js';
 import { 
   HistoricalAnalyticsResponse, 
@@ -16,6 +17,7 @@ import {
   ExtremeEventsResponse, 
   ClimateFingerprintResponse, 
   ForecastAccuracyResponse, 
+  RecentQueryEntry,
   WeatherMetric, 
   AggregationPeriod 
 } from './types/analytics.js';
@@ -31,6 +33,7 @@ import { EventReplay } from './components/EventReplay.js';
 import { ClimateFingerprint } from './components/ClimateFingerprint.js';
 import { ForecastAccuracy } from './components/ForecastAccuracy.js';
 import { ResearchQuery } from './components/ResearchQuery.js';
+import { RecentQueriesWidget } from './components/RecentQueriesWidget.js';
 
 import { 
   CloudSun, 
@@ -45,7 +48,8 @@ import {
   Target, 
   Search, 
   ShieldCheck, 
-  Activity 
+  Activity,
+  MapPin
 } from 'lucide-react';
 
 import { LocationData } from './components/LocationSearch.js';
@@ -53,11 +57,11 @@ import { LocationData } from './components/LocationSearch.js';
 export const ResearchDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [location, setLocation] = useState<string | LocationData>('Pune');
-  const [locationB, setLocationB] = useState<string | LocationData>('Mumbai');
   const [metric, setMetric] = useState<WeatherMetric>('rainfall');
   const [aggregation, setAggregation] = useState<AggregationPeriod>('monthly');
   const [startDate, setStartDate] = useState<string>('2015-01-01');
   const [endDate, setEndDate] = useState<string>('2024-12-31');
+  const [baselineRange, setBaselineRange] = useState<{ start?: string; end?: string }>({});
 
   // Analytical Data States
   const [historicalData, setHistoricalData] = useState<HistoricalAnalyticsResponse | null>(null);
@@ -74,11 +78,13 @@ export const ResearchDashboard: React.FC = () => {
     let mounted = true;
     setLoading(true);
 
+    const locName = typeof location === 'string' ? location : location.name;
+
     Promise.all([
       fetchHistoricalData(location, startDate, endDate, metric, aggregation),
       fetchTrendData(location, startDate, endDate, metric),
-      fetchAnomalyData(location, startDate, endDate, metric),
-      fetchComparisonData(location, locationB, startDate, endDate, metric),
+      fetchAnomalyData(location, startDate, endDate, metric, baselineRange.start, baselineRange.end),
+      fetchComparisonData(location, 'Mumbai', startDate, endDate, metric),
       fetchExtremeEvents(location, startDate, endDate),
       fetchClimateFingerprint(location),
       fetchForecastAccuracy(location, metric === 'temperature' ? 'temperature' : 'temperature', 14)
@@ -93,15 +99,33 @@ export const ResearchDashboard: React.FC = () => {
           setClimateData(clim);
           setForecastData(fc);
           setLoading(false);
+
+          // Save to lightweight recent queries history
+          saveRecentQuery({
+            queryType: 'DASHBOARD_EXPLORE',
+            title: `${locName} • ${metric.toUpperCase()} (${startDate.substring(0, 4)}–${endDate.substring(0, 4)})`,
+            location: typeof location === 'string' ? { name: location } : location,
+            params: { metric, aggregation, start: startDate, end: endDate }
+          });
         }
       })
       .catch((err) => {
         console.error('Error fetching analytics dataset:', err);
-        setLoading(false);
+        if (mounted) setLoading(false);
       });
 
     return () => { mounted = false; };
-  }, [location, locationB, metric, aggregation, startDate, endDate]);
+  }, [location, metric, aggregation, startDate, endDate, baselineRange.start, baselineRange.end]);
+
+  // Feature 10: Restore recent research query
+  const handleRestoreQuery = (q: RecentQueryEntry) => {
+    if (q.location) setLocation(q.location);
+    if (q.params?.metric) setMetric(q.params.metric);
+    if (q.params?.aggregation) setAggregation(q.params.aggregation);
+    if (q.params?.start) setStartDate(q.params.start);
+    if (q.params?.end) setEndDate(q.params.end);
+    setActiveTab('overview');
+  };
 
   const navItems = [
     { id: 'overview', label: 'Overview', icon: Layers },
@@ -116,6 +140,8 @@ export const ResearchDashboard: React.FC = () => {
     { id: 'forecast', label: 'Forecast Accuracy', icon: Target },
     { id: 'query', label: 'Research Query', icon: Search }
   ];
+
+  const locDisplayName = typeof location === 'string' ? location : `${location.name}, ${location.state}`;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
@@ -146,7 +172,7 @@ export const ResearchDashboard: React.FC = () => {
             </div>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-800">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              API Connected
+              Deterministic Engine Online
             </span>
           </div>
         </div>
@@ -177,7 +203,26 @@ export const ResearchDashboard: React.FC = () => {
       </header>
 
       {/* Main Content Workspace */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Active Context Banner & Feature 10 Recent Queries */}
+        <div className="flex flex-col gap-3">
+          <div className="bg-slate-900/60 border border-slate-800/60 rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between text-xs text-slate-400">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-3.5 h-3.5 text-blue-400" />
+              <span>Active Target: <strong className="text-white">{locDisplayName}</strong></span>
+              <span className="text-slate-600">•</span>
+              <span>Period: <strong className="text-slate-200 font-mono">{startDate} → {endDate}</strong></span>
+              <span className="text-slate-600">•</span>
+              <span>Metric: <strong className="text-slate-200 uppercase font-mono">{metric}</strong></span>
+            </div>
+            <div className="text-[11px] text-slate-500 font-mono">
+              L1/L2 Cached • Dynamic India Search
+            </div>
+          </div>
+
+          <RecentQueriesWidget onRestoreQuery={handleRestoreQuery} />
+        </div>
+
         {activeTab === 'overview' && (
           <ResearchOverview
             historicalData={historicalData}
@@ -185,7 +230,7 @@ export const ResearchDashboard: React.FC = () => {
             anomalyData={anomalyData}
             extremeData={extremeData}
             climateData={climateData}
-            location={location}
+            location={locDisplayName}
             metric={metric}
             onNavigateTab={(tab) => setActiveTab(tab)}
           />
@@ -220,6 +265,9 @@ export const ResearchDashboard: React.FC = () => {
             anomalyData={anomalyData}
             loading={loading}
             selectedMetric={metric}
+            onBaselineChange={(baseStart, baseEnd) => {
+              setBaselineRange({ start: baseStart, end: baseEnd });
+            }}
           />
         )}
 
@@ -231,11 +279,9 @@ export const ResearchDashboard: React.FC = () => {
           <LocationComparison
             comparisonData={comparisonData}
             loading={loading}
-            locationA={location}
-            locationB={locationB}
             selectedMetric={metric}
-            onLocationAChange={setLocation}
-            onLocationBChange={setLocationB}
+            startDate={startDate}
+            endDate={endDate}
           />
         )}
 
@@ -278,9 +324,9 @@ export const ResearchDashboard: React.FC = () => {
           <div className="flex items-center gap-4 text-[11px]">
             <span>ERA5 Reanalysis (0.1°)</span>
             <span>•</span>
-            <span>IMD Reference Normals</span>
+            <span>IMD Reference Baseline</span>
             <span>•</span>
-            <span>Strict Numerical Integrity</span>
+            <span>Strict Deterministic Integrity</span>
           </div>
         </div>
       </footer>

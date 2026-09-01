@@ -115,6 +115,18 @@ function runMigrations() {
     }
   });
 
+  const migration009 = resolve(__dirname, 'migrations', '009_research_enhancements.sql');
+  if (existsSync(migration009)) {
+    const sql009 = readFileSync(migration009, 'utf-8').replace(/--[^\n]*/g, '');
+    sql009.split(';').filter(s => s.trim()).forEach(stmt => {
+      try {
+        db.run(stmt + ';');
+      } catch (err) {
+        logger.error({ err: err.message }, 'migration 009 failed');
+      }
+    });
+  }
+
   logger.info('database migrations applied');
 }
 export function closeDb() {

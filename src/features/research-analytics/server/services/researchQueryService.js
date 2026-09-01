@@ -113,14 +113,15 @@ export class ResearchQueryService {
         const keyInsights = [];
         let provenance = null;
         if (parsed.type === 'COMPARISON') {
-            const locB = resolveLocation(parsed.locations[1] || 'Mumbai');
-            const compRes = await this.comparisonService.compareLocations(locA, locB, parsed.dateRange.start, parsed.dateRange.end, parsed.metric);
+            const locList = parsed.locations.map(l => resolveLocation(l));
+            if (locList.length < 2) locList.push(resolveLocation('Mumbai'));
+            const compRes = await this.comparisonService.compareMultipleLocations(locList, parsed.dateRange.start, parsed.dateRange.end, parsed.metric);
             analyticsData = compRes;
             chartType = 'comparison-line';
             explanation = compRes.analyticalExplanation;
-            keyInsights.push(`${compRes.comparisonSummary.higherLocation} recorded higher overall ${parsed.metric} by ${Math.abs(compRes.comparisonSummary.percentDifference)}%.`);
-            keyInsights.push(`${locA.name} had ${compRes.locationA.extremeEventsCount} extreme events vs ${compRes.locationB.extremeEventsCount} in ${locB.name}.`);
-            keyInsights.push(`Inter-station variability difference is ${compRes.comparisonSummary.variabilityDifference}%.`);
+            keyInsights.push(`${compRes.summaryComparison.highestLocation} recorded highest ${parsed.metric} (${compRes.summaryComparison.absoluteDifference} ${compRes.unit} higher than ${compRes.summaryComparison.lowestLocation}).`);
+            keyInsights.push(`Inter-station difference: ${Math.abs(compRes.summaryComparison.percentDifference)}%.`);
+            keyInsights.push(`Top ranked: 1st ${compRes.locations[0].name} (${compRes.locations[0].primaryMetricValue} ${compRes.unit}), 2nd ${compRes.locations[1].name} (${compRes.locations[1].primaryMetricValue} ${compRes.unit}).`);
             provenance = compRes.provenance;
         }
         else if (parsed.type === 'TREND') {
@@ -128,9 +129,9 @@ export class ResearchQueryService {
             analyticsData = trendRes;
             chartType = 'line';
             explanation = trendRes.analyticalExplanation;
-            keyInsights.push(`Trajectory: ${trendRes.trendDirection} (${trendRes.slopePerYear > 0 ? '+' : ''}${trendRes.slopePerYear}/year).`);
-            keyInsights.push(`Total percentage change over the evaluation window: ${trendRes.percentageChange > 0 ? '+' : ''}${trendRes.percentageChange}%.`);
-            keyInsights.push(`Inter-annual variability: ${trendRes.variabilityPercent}%.`);
+            keyInsights.push(`Trajectory: ${trendRes.trendDirection} (${trendRes.slopePerYear > 0 ? '+' : ''}${trendRes.slopePerYear} ${trendRes.unit}/year).`);
+            keyInsights.push(`Statistical Status: ${trendRes.significance.label} (Mann-Kendall p = ${trendRes.significance.pValue}).`);
+            keyInsights.push(`Total percentage change: ${trendRes.percentageChange > 0 ? '+' : ''}${trendRes.percentageChange}% (CV: ${trendRes.variabilityPercent}%).`);
             provenance = trendRes.provenance;
         }
         else if (parsed.type === 'ANOMALY') {
@@ -138,9 +139,9 @@ export class ResearchQueryService {
             analyticsData = anomRes;
             chartType = 'bar';
             explanation = anomRes.explanation;
-            keyInsights.push(`Observed Value: ${anomRes.observedValue} vs Historical Baseline: ${anomRes.historicalBaseline}.`);
-            keyInsights.push(`Anomaly Status: ${anomRes.badgeLabel}.`);
-            keyInsights.push(`Statistical Z-score deviation: ${anomRes.zScore}.`);
+            keyInsights.push(`Observed: ${anomRes.observedValue} ${anomRes.unit} vs Baseline Normal: ${anomRes.historicalBaseline} ${anomRes.unit} (${anomRes.anomalyPercentage > 0 ? '+' : ''}${anomRes.anomalyPercentage}%).`);
+            keyInsights.push(`Anomaly Status: ${anomRes.badgeLabel} (Z-score: ${anomRes.zScore}).`);
+            keyInsights.push(`Significant day-level anomalies detected: ${anomRes.detectedAnomaliesCount}.`);
             provenance = anomRes.provenance;
         }
         else if (parsed.type === 'EXTREME') {

@@ -34,64 +34,74 @@ export function LocationSettings({ location, onSave }) {
 
   let statusText = 'Location unavailable';
   if (isDetecting) {
-    statusText = 'Detecting location...';
+    statusText = 'Detecting coordinates...';
   } else if (geoError) {
     statusText = geoError;
   } else if (hasLocation) {
-    statusText = isAuto ? 'Location detected automatically' : 'Using manually selected location';
+    statusText = isAuto ? 'Location detected automatically' : 'Manually specified location';
   }
 
+  const locationDisplay = location.district 
+    ? `${location.district}, ${location.state}` 
+    : location.state || 'Select Location';
+
   return (
-    <div className="location-minimal">
-      {hasLocation ? (
-        <div>
-          <div className="location-text">
-            📍 {location.district ? `${location.district}, ${location.state}` : location.state}
-          </div>
-          <div className="location-subtext">{statusText}</div>
-          <button className="location-btn" onClick={() => setShowManual(!showManual)}>
-            {showManual ? 'Cancel' : 'Change Location'}
-          </button>
-        </div>
-      ) : (
-        <div>
-          <div className="location-text" style={{ color: 'var(--severity-extreme)' }}>
-            📍 {statusText}
-          </div>
-          <button className="location-btn" onClick={() => setShowManual(!showManual)}>
-            {showManual ? 'Cancel' : 'Set Location'}
-          </button>
-        </div>
-      )}
+    <div className="sidebar-panel-card location-instrument">
+      <div className="instrument-label">
+        <span>Target Location</span>
+        {hasLocation && <span className="text-[10px] text-emerald-400">ONLINE</span>}
+      </div>
+
+      <div className="location-title">
+        <span>📍</span>
+        <span className="truncate">{locationDisplay}</span>
+      </div>
+
+      <div className="location-status">
+        {statusText}
+      </div>
+
+      <button 
+        className="location-action-btn"
+        onClick={() => setShowManual(!showManual)}
+      >
+        {showManual ? 'Cancel' : 'Change Location'}
+      </button>
 
       {showManual && (
-        <form onSubmit={handleManualSubmit} style={{ marginTop: '16px' }}>
-          <div className="filter-group" style={{ marginBottom: '8px' }}>
+        <form onSubmit={handleManualSubmit} className="location-manual-form">
+          <div className="form-group-compact">
             <label htmlFor="user-state">State</label>
             <input 
               id="user-state" 
               type="text" 
               value={state} 
               onChange={e => setState(e.target.value)} 
-              placeholder="e.g. Karnataka" 
+              placeholder="e.g. Maharashtra" 
+              required
             />
           </div>
-          <div className="filter-group" style={{ marginBottom: '16px' }}>
-            <label htmlFor="user-district">District</label>
+          <div className="form-group-compact">
+            <label htmlFor="user-district">District / City</label>
             <input 
               id="user-district" 
               type="text" 
               value={district} 
               onChange={e => setDistrict(e.target.value)} 
-              placeholder="e.g. Dakshina Kannada" 
+              placeholder="e.g. Pune" 
             />
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button type="submit" style={{ flex: 1, padding: '10px', background: 'var(--text-main)', color: '#000', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}>
+          <div className="form-actions-compact">
+            <button type="submit" className="btn-primary-compact">
               Save
             </button>
-            <button type="button" onClick={handleAutoDetect} disabled={isDetecting} style={{ flex: 1, padding: '10px', background: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', border: 'none', borderRadius: '6px', cursor: isDetecting ? 'wait' : 'pointer', fontWeight: '600' }}>
-              {isDetecting ? 'Detecting...' : 'Auto Detect'}
+            <button 
+              type="button" 
+              onClick={handleAutoDetect} 
+              disabled={isDetecting}
+              className="btn-secondary-compact"
+            >
+              {isDetecting ? 'Detecting…' : 'Auto Detect'}
             </button>
           </div>
         </form>

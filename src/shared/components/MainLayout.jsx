@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Menu, HelpCircle, UserCircle, Hexagon } from 'lucide-react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import Module1View from '../../features/chatbot/Module1View.jsx';
+import { Menu, HelpCircle, UserCircle, Hexagon, MessageCircle } from 'lucide-react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 const copilotModes = [
+  { id: 'chatbot', label: 'Chatbot', path: '/chatbot' },
   { id: 'farmer', label: 'Farmer', path: '/farmer' },
   { id: 'aviation-marine', label: 'Aviation-Marine', path: '/aviation' },
   { id: 'gis', label: 'GIS', path: '/gis' },
@@ -13,46 +13,34 @@ const copilotModes = [
 
 export function MainLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans text-slate-900">
+    <div className="h-screen bg-slate-50 flex flex-col font-sans text-slate-900 relative overflow-hidden">
       {/* Top Navbar */}
-      <header className="border-b border-gray-200 px-4 py-3 flex items-center justify-between bg-white z-40">
-        <button className="text-gray-500 hover:text-gray-800 transition-colors">
-          <Menu className="w-6 h-6" />
-        </button>
-        
+      <header className="shrink-0 sticky top-0 h-[64px] border-b border-gray-200 px-4 py-3 flex items-center justify-center bg-white z-50 shadow-sm">
         <div className="flex items-center gap-2">
           {/* Logo icon */}
-          <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center border border-gray-300">
-             <Hexagon className="w-5 h-5 text-slate-700" />
+          <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center border border-blue-200">
+             <Hexagon className="w-5 h-5 text-blue-600" />
           </div>
           <span className="font-bold text-xl tracking-tight text-slate-800">WeatherGPT</span>
-        </div>
-
-        <div className="flex items-center gap-4 text-gray-400">
-          <button className="hover:text-gray-600 transition-colors">
-            <HelpCircle className="w-6 h-6" />
-          </button>
-          <button className="hover:text-gray-600 transition-colors">
-            <UserCircle className="w-6 h-6" />
-          </button>
         </div>
       </header>
 
       {/* Copilot Modes Bar */}
-      <div className="bg-gray-50/80 border-b border-gray-200 px-4 py-2 flex items-center gap-4 text-sm font-medium overflow-x-auto whitespace-nowrap">
-        <span className="text-gray-600 font-semibold ml-4">Copilot Modes:</span>
-        <div className="flex gap-2">
+      <div className="shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-center gap-6 text-sm font-medium overflow-x-auto whitespace-nowrap shadow-sm z-40 w-full">
+        <span className="text-gray-500 font-semibold tracking-wide uppercase text-xs hidden sm:block">Modules</span>
+        <div className="flex gap-2 sm:gap-3">
           {copilotModes.map(mode => (
             <NavLink
               key={mode.id}
               to={mode.path}
               className={({ isActive }) =>
-                `px-4 py-1.5 rounded border transition-colors ${
+                `px-4 py-1.5 rounded-full border transition-all duration-300 ${
                   isActive 
-                    ? 'bg-teal-600 text-white border-teal-700 shadow-sm' 
-                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-md transform scale-105 font-semibold tracking-wide' 
+                    : 'bg-white text-slate-600 border-gray-200 hover:bg-slate-50 hover:text-blue-700 hover:border-blue-300'
                 }`
               }
             >
@@ -62,40 +50,28 @@ export function MainLayout() {
         </div>
       </div>
 
-      {/* Main Content Area - Split Layout */}
-      <main className="flex-1 flex flex-col md:flex-row overflow-hidden bg-gray-100 p-3 gap-3">
-        {/* Left Pane - Chatbot */}
-        <div className="w-full md:w-1/2 bg-white rounded-xl border border-gray-200 flex flex-col overflow-hidden shadow-sm">
-          <div className="flex-1 overflow-hidden relative">
-            <ChatbotContainer />
-          </div>
-        </div>
-
-        {/* Right Pane - Dynamic Module Data */}
-        <div className="w-full md:w-1/2 bg-white rounded-xl border border-gray-200 flex flex-col overflow-hidden shadow-sm">
-          <div className="px-5 py-4 border-b border-gray-200 bg-white flex items-center gap-2">
-            <h2 className="text-lg font-bold text-gray-800">
-              {location.pathname.includes('/farmer') && 'Farmer Dashboard: Crop Advisories & Weather'}
-              {location.pathname.includes('/research') && 'Research Analytics: Historical Data & Trends'}
-              {location.pathname.includes('/alerts') && 'Alerts Hub: Real-time Weather Warnings'}
-              {location.pathname.includes('/gis') && 'GIS Map: Localized Rainfall Analysis'}
-              {location.pathname.includes('/aviation') && 'Aviation & Marine: Specialized Forecasts'}
-            </h2>
-          </div>
-          <div className="flex-1 overflow-auto relative bg-slate-900">
+      <main className="flex-1 min-h-0 flex flex-col overflow-hidden bg-slate-50 p-4">
+        <div className="w-full flex-1 min-h-0 bg-white rounded-2xl border border-gray-200 flex flex-col overflow-hidden shadow-lg relative">
+          <div className="flex-1 min-h-0 overflow-hidden relative flex flex-col w-full">
              <Outlet />
           </div>
         </div>
       </main>
-    </div>
-  );
-}
 
-// Wrapper for the Chatbot Module to ensure it fills the pane properly
-function ChatbotContainer() {
-  return (
-    <div className="w-full h-full flex flex-col">
-       <Module1View />
+      {/* Floating Chatbot Button (Hidden if already on chatbot page) */}
+      {location.pathname !== '/chatbot' && (
+        <button 
+          onClick={() => navigate('/chatbot')}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-transform hover:scale-110 active:scale-95 z-50 border border-blue-400 group"
+        >
+          <MessageCircle className="w-6 h-6 group-hover:animate-pulse" />
+          {/* Optional Ping effect */}
+          <span className="absolute -top-1 -right-1 flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500 border border-white"></span>
+          </span>
+        </button>
+      )}
     </div>
   );
 }

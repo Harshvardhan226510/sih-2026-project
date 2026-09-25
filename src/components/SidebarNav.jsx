@@ -4,7 +4,7 @@ import './SidebarNav.css';
 
 export const SidebarNav = ({ activeTab, setActiveTab }) => {
   const navItems = [
-    { id: 'chatbot', label: 'WeatherGPT Chat', icon: Bot },
+    { id: 'chatbot', label: 'AI Chat', icon: Bot },
     { id: 'gis-map', label: 'GIS & Interactive Map', icon: Map },
     { id: 'alerts', label: 'Alerts & Warning', icon: ShieldAlert },
     { id: 'farmer-dashboard', label: 'Farmer Advisory', icon: Sprout },

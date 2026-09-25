@@ -19,28 +19,10 @@ import { startLocationWatcher } from './features/alerts/services/locationWatcher
 startLocationWatcher();
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(async (registration) => {
-        // Listen for navigation messages from the Service Worker
-        // (notificationclick sends NAVIGATE to focus the right alert)
-        navigator.serviceWorker.addEventListener('message', (event) => {
-          if (event.data?.type === 'NAVIGATE' && event.data?.url) {
-            window.location.href = event.data.url;
-          }
-        });
-
-        // Initiate push subscription after SW is ready
-        // This is non-blocking — denial or failure doesn't affect the app
-        if (isPushSupported()) {
-          initPushSubscription(registration).catch(() => {
-            // Push setup is best-effort; REST sync is the reliable fallback
-          });
-        }
-      })
-      .catch(() => {
-        // SW registration failure is non-fatal
-      });
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    for (let registration of registrations) {
+      registration.unregister();
+    }
   });
 }
 

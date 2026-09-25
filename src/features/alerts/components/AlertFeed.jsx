@@ -52,18 +52,27 @@ export function AlertFeed({ alerts, selectedId, onSelect, location, loading }) {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <div className="skeleton-card" style={{ height: '220px' }}>
-          <div className="skeleton-line skeleton-badge" />
-          <div className="skeleton-line skeleton-title" />
-          <div className="skeleton-line" style={{ width: '80%' }} />
+      <div className="flex flex-col bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="bg-slate-50 border-b border-slate-200 px-6 py-3 flex items-center justify-between">
+          <div className="h-4 w-32 bg-slate-200 rounded animate-pulse"></div>
+          <div className="h-4 w-32 bg-slate-200 rounded animate-pulse"></div>
+          <div className="h-4 w-32 bg-slate-200 rounded animate-pulse"></div>
         </div>
-        <div className="secondary-alerts-grid">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="skeleton-card" style={{ height: '140px' }}>
-              <div className="skeleton-line skeleton-badge" />
-              <div className="skeleton-line skeleton-title" />
-              <div className="skeleton-line" style={{ width: '90%' }} />
+        <div className="divide-y divide-slate-100">
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="px-6 py-4 flex items-center justify-between">
+              <div className="flex-[2] pr-4">
+                <div className="h-4 w-3/4 bg-slate-200 rounded animate-pulse mb-2"></div>
+                <div className="h-3 w-1/2 bg-slate-100 rounded animate-pulse"></div>
+              </div>
+              <div className="flex-[3] px-4">
+                <div className="h-4 w-full bg-slate-200 rounded animate-pulse mb-2"></div>
+                <div className="h-3 w-2/3 bg-slate-100 rounded animate-pulse"></div>
+              </div>
+              <div className="flex-[2] pl-4 flex flex-col items-end">
+                <div className="h-4 w-1/2 bg-slate-200 rounded animate-pulse mb-2"></div>
+                <div className="h-3 w-1/3 bg-slate-100 rounded animate-pulse"></div>
+              </div>
             </div>
           ))}
         </div>
@@ -95,38 +104,24 @@ export function AlertFeed({ alerts, selectedId, onSelect, location, loading }) {
     );
   }
 
-  const primaryAlert = sortedAlerts[0];
-  const secondaryAlerts = sortedAlerts.slice(1);
-
   return (
-    <div className="flex flex-col gap-6" role="feed" aria-label="Weather alerts feed">
-      {/* 1. Single Primary Priority Alert Hero */}
-      {primaryAlert && (
-        <AlertCard
-          key={primaryAlert.id}
-          alert={primaryAlert}
-          isPrimary={true}
-          isSelected={selectedId === primaryAlert.id}
-          onClick={onSelect}
-          location={location}
-        />
-      )}
-
-      {/* 2. Secondary Alerts 2-Column Responsive Grid */}
-      {secondaryAlerts.length > 0 && (
-        <div className="secondary-alerts-grid">
-          {secondaryAlerts.map((alert) => (
-            <AlertCard
-              key={alert.id}
-              alert={alert}
-              isPrimary={false}
-              isSelected={selectedId === alert.id}
-              onClick={onSelect}
-              location={location}
-            />
-          ))}
-        </div>
-      )}
+    <div className="flex flex-col bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm" role="feed" aria-label="Weather alerts feed">
+      <div className="bg-slate-50 border-b border-slate-200 px-6 py-3 flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
+        <div className="flex-[2]">Severity & Event</div>
+        <div className="flex-[3]">Target Area</div>
+        <div className="flex-[2] text-right">Validity Period</div>
+      </div>
+      <div className="divide-y divide-slate-100">
+        {sortedAlerts.map((alert) => (
+          <AlertCard
+            key={alert.id}
+            alert={alert}
+            isSelected={selectedId === alert.id}
+            onClick={onSelect}
+            location={location}
+          />
+        ))}
+      </div>
     </div>
   );
 }

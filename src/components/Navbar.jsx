@@ -5,7 +5,7 @@ import './Navbar.css';
 export const Navbar = ({ activeTab, setActiveTab }) => {
   const navItems = [
     { id: 'gis-map', label: 'GIS & Map', icon: Map },
-    { id: 'chatbot', label: 'WeatherGPT Chat', icon: Bot },
+    { id: 'chatbot', label: 'AI Chat', icon: Bot },
     { id: 'alerts', label: 'Alerts & Warning', icon: ShieldAlert },
     { id: 'farmer-dashboard', label: 'Farmer Advisory', icon: Sprout },
     { id: 'aviation-marine', label: 'Aviation & Marine', icon: Plane },

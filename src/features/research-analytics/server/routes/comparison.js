@@ -41,7 +41,7 @@ router.get('/', async (req, res) => {
         if (mode === 'periods' || (period_a_start && period_b_start)) {
             const loc = resolveLocation(locParam || 'pune');
             const rangeA = validateDateRange(period_a_start || '1990-01-01', period_a_end || '2000-12-31');
-            const rangeB = validateDateRange(period_b_start || '2015-01-01', period_b_end || '2024-12-31');
+            const rangeB = validateDateRange(period_b_start || '2015-01-01', period_b_end || '2026-12-31');
             const result = await comparisonService.comparePeriods(loc, rangeA, rangeB, metric);
             return res.json(result);
         }

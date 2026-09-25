@@ -1,42 +1,51 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 
-const CYCLONE_DATA = {
-  name: 'Cyclone REMAL',
-  category: 'Severe Cyclonic Storm',
-  maxWindKph: 130,
-  centralPressureHpa: 984,
-  pastTrack: [
-    { lat: 13.5, lon: 87.8, time: 'May 24 00:00 UTC', windKph: 55, category: 'Depression' },
-    { lat: 14.8, lon: 87.5, time: 'May 24 06:00 UTC', windKph: 65, category: 'Deep Depression' },
-    { lat: 16.2, lon: 87.1, time: 'May 24 12:00 UTC', windKph: 75, category: 'Cyclonic Storm' },
-    { lat: 17.5, lon: 87.3, time: 'May 24 18:00 UTC', windKph: 85, category: 'Cyclonic Storm' },
-    { lat: 18.6, lon: 87.8, time: 'May 25 00:00 UTC', windKph: 95, category: 'Severe Cyclonic Storm' },
-    { lat: 19.4, lon: 88.2, time: 'May 25 06:00 UTC', windKph: 110, category: 'Severe Cyclonic Storm' },
-    { lat: 20.1, lon: 88.5, time: 'May 25 12:00 UTC', windKph: 120, category: 'Severe Cyclonic Storm' },
-    { lat: 20.8, lon: 88.9, time: 'May 25 18:00 UTC', windKph: 130, category: 'Severe Cyclonic Storm' }
-  ],
-  forecastTrack: [
-    { lat: 21.4, lon: 89.2, time: '+6h Forecast', windKph: 120 },
-    { lat: 21.9, lon: 89.4, time: '+12h Forecast', windKph: 100 },
-    { lat: 22.3, lon: 89.5, time: '+18h Forecast', windKph: 80 },
-    { lat: 22.8, lon: 89.6, time: '+24h Forecast', windKph: 60 }
-  ],
-  forecastCone: [
-    [20.8, 88.9],
-    [21.2, 88.5],
-    [21.7, 88.3],
-    [22.2, 88.4],
-    [22.6, 88.6],
-    [23.0, 88.8],
-    [23.2, 89.6],
-    [23.0, 90.4],
-    [22.6, 90.6],
-    [22.2, 90.6],
-    [21.7, 90.5],
-    [21.2, 90.1],
-    [20.8, 88.9]
-  ]
+const generateLiveCycloneData = () => {
+  const now = new Date();
+  
+  const formatDate = (hoursOffset) => {
+    const d = new Date(now.getTime() + hoursOffset * 60 * 60 * 1000);
+    return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+  };
+
+  return {
+    name: 'Cyclone REMAL (Simulated)',
+    category: 'Severe Cyclonic Storm',
+    maxWindKph: 130,
+    centralPressureHpa: 984,
+    pastTrack: [
+      { lat: 13.5, lon: 87.8, time: formatDate(-42), windKph: 55, category: 'Depression' },
+      { lat: 14.8, lon: 87.5, time: formatDate(-36), windKph: 65, category: 'Deep Depression' },
+      { lat: 16.2, lon: 87.1, time: formatDate(-30), windKph: 75, category: 'Cyclonic Storm' },
+      { lat: 17.5, lon: 87.3, time: formatDate(-24), windKph: 85, category: 'Cyclonic Storm' },
+      { lat: 18.6, lon: 87.8, time: formatDate(-18), windKph: 95, category: 'Severe Cyclonic Storm' },
+      { lat: 19.4, lon: 88.2, time: formatDate(-12), windKph: 110, category: 'Severe Cyclonic Storm' },
+      { lat: 20.1, lon: 88.5, time: formatDate(-6), windKph: 120, category: 'Severe Cyclonic Storm' },
+      { lat: 20.8, lon: 88.9, time: 'LIVE - ' + formatDate(0), windKph: 130, category: 'Severe Cyclonic Storm' }
+    ],
+    forecastTrack: [
+      { lat: 21.4, lon: 89.2, time: '+6h Forecast (' + formatDate(6) + ')', windKph: 120 },
+      { lat: 21.9, lon: 89.4, time: '+12h Forecast (' + formatDate(12) + ')', windKph: 100 },
+      { lat: 22.3, lon: 89.5, time: '+18h Forecast (' + formatDate(18) + ')', windKph: 80 },
+      { lat: 22.8, lon: 89.6, time: '+24h Forecast (' + formatDate(24) + ')', windKph: 60 }
+    ],
+    forecastCone: [
+      [20.8, 88.9],
+      [21.2, 88.5],
+      [21.7, 88.3],
+      [22.2, 88.4],
+      [22.6, 88.6],
+      [23.0, 88.8],
+      [23.2, 89.6],
+      [23.0, 90.4],
+      [22.6, 90.6],
+      [22.2, 90.6],
+      [21.7, 90.5],
+      [21.2, 90.1],
+      [20.8, 88.9]
+    ]
+  };
 };
 
 const getCategoryColor = (windKph) => {
@@ -61,8 +70,10 @@ export const CycloneOverlay = ({ map }) => {
 
     layersRef.current.forEach((layer) => map.removeLayer(layer));
     layersRef.current = [];
+    
+    const cycloneData = generateLiveCycloneData();
 
-    const pastCoords = CYCLONE_DATA.pastTrack.map((p) => [p.lat, p.lon]);
+    const pastCoords = cycloneData.pastTrack.map((p) => [p.lat, p.lon]);
 
     const pastLine = L.polyline(pastCoords, {
       color: '#ef4444',
@@ -71,9 +82,9 @@ export const CycloneOverlay = ({ map }) => {
     }).addTo(map);
     layersRef.current.push(pastLine);
 
-    CYCLONE_DATA.pastTrack.forEach((point, idx) => {
+    cycloneData.pastTrack.forEach((point, idx) => {
       const color = getCategoryColor(point.windKph);
-      const isLatest = idx === CYCLONE_DATA.pastTrack.length - 1;
+      const isLatest = idx === cycloneData.pastTrack.length - 1;
       const radius = isLatest ? 0 : 4 + (point.windKph / 40);
 
       if (!isLatest) {
@@ -98,7 +109,7 @@ export const CycloneOverlay = ({ map }) => {
       }
     });
 
-    const currentPos = CYCLONE_DATA.pastTrack[CYCLONE_DATA.pastTrack.length - 1];
+    const currentPos = cycloneData.pastTrack[cycloneData.pastTrack.length - 1];
 
     const outerRing = L.circle([currentPos.lat, currentPos.lon], {
       radius: 180000,
@@ -144,18 +155,18 @@ export const CycloneOverlay = ({ map }) => {
     const eyeMarker = L.marker([currentPos.lat, currentPos.lon], { icon: eyeIcon }).addTo(map);
     eyeMarker.bindPopup(
       `<div style="font-family:Inter,system-ui,sans-serif;min-width:220px">` +
-      `<div style="font-weight:800;font-size:15px;color:#ef4444;margin-bottom:2px">🌀 ${CYCLONE_DATA.name}</div>` +
-      `<div style="font-size:12px;color:#f97316;font-weight:600;margin-bottom:8px">${CYCLONE_DATA.category}</div>` +
+      `<div style="font-weight:800;font-size:15px;color:#ef4444;margin-bottom:2px">🌀 ${cycloneData.name}</div>` +
+      `<div style="font-size:12px;color:#f97316;font-weight:600;margin-bottom:8px">${cycloneData.category}</div>` +
       `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px">` +
-      `<div><span style="color:#94a3b8">Max Wind</span><br/><b>${CYCLONE_DATA.maxWindKph} km/h</b></div>` +
-      `<div><span style="color:#94a3b8">Pressure</span><br/><b>${CYCLONE_DATA.centralPressureHpa} hPa</b></div>` +
+      `<div><span style="color:#94a3b8">Max Wind</span><br/><b>${cycloneData.maxWindKph} km/h</b></div>` +
+      `<div><span style="color:#94a3b8">Pressure</span><br/><b>${cycloneData.centralPressureHpa} hPa</b></div>` +
       `<div><span style="color:#94a3b8">Position</span><br/><b>${currentPos.lat.toFixed(1)}°N, ${currentPos.lon.toFixed(1)}°E</b></div>` +
       `<div><span style="color:#94a3b8">Time</span><br/><b>${currentPos.time}</b></div>` +
       `</div></div>`
     );
     layersRef.current.push(eyeMarker);
 
-    const conePolygon = L.polygon(CYCLONE_DATA.forecastCone, {
+    const conePolygon = L.polygon(cycloneData.forecastCone, {
       color: 'rgba(251, 191, 36, 0.6)',
       fillColor: 'rgba(251, 191, 36, 0.12)',
       fillOpacity: 1,
@@ -172,7 +183,7 @@ export const CycloneOverlay = ({ map }) => {
 
     const forecastCoords = [
       [currentPos.lat, currentPos.lon],
-      ...CYCLONE_DATA.forecastTrack.map((p) => [p.lat, p.lon])
+      ...cycloneData.forecastTrack.map((p) => [p.lat, p.lon])
     ];
 
     const forecastLine = L.polyline(forecastCoords, {
@@ -183,7 +194,7 @@ export const CycloneOverlay = ({ map }) => {
     }).addTo(map);
     layersRef.current.push(forecastLine);
 
-    CYCLONE_DATA.forecastTrack.forEach((point) => {
+    cycloneData.forecastTrack.forEach((point) => {
       const color = getCategoryColor(point.windKph);
 
       const marker = L.circleMarker([point.lat, point.lon], {
@@ -206,7 +217,7 @@ export const CycloneOverlay = ({ map }) => {
 
     const labelIcon = L.divIcon({
       className: 'cyclone-label-icon',
-      html: `<div class="cyclone-name-label animate__animated animate__fadeInRight">${CYCLONE_DATA.name}<br/><span>${CYCLONE_DATA.maxWindKph} km/h</span></div>`,
+      html: `<div class="cyclone-name-label animate__animated animate__fadeInRight">${cycloneData.name}<br/><span>${cycloneData.maxWindKph} km/h</span></div>`,
       iconSize: [140, 40],
       iconAnchor: [-12, 20]
     });

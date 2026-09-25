@@ -60,7 +60,7 @@ export const EventReplay: React.FC = () => {
 
   if (loading || !replayData) {
     return (
-      <div className="h-64 flex items-center justify-center text-slate-400">
+      <div className="h-64 flex items-center justify-center text-slate-500">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
       </div>
     );
@@ -84,19 +84,19 @@ export const EventReplay: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Event Selector & Scrubber Header */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
           <div>
             <div className="flex items-center gap-2">
               <RotateCcw className="w-4 h-4 text-blue-400" />
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Historical Severe Event Synoptic Replay
               </span>
             </div>
-            <h2 className="text-xl font-bold text-white mt-1">
+            <h2 className="text-xl font-bold text-slate-800 mt-1">
               {replayData.eventName}
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Location: {replayData.location} • Case Study Window: {replayData.startDate} → {replayData.endDate}
             </p>
           </div>
@@ -105,7 +105,7 @@ export const EventReplay: React.FC = () => {
             <select
               value={selectedEventId}
               onChange={(e) => setSelectedEventId(e.target.value)}
-              className="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+              className="bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
             >
               <option value="mumbai-2005-deluge">2005 Mumbai Deluge (944 mm)</option>
               <option value="pune-2019-flash-flood">2019 Pune Cloudburst & Flash Flood (281 mm)</option>
@@ -118,7 +118,7 @@ export const EventReplay: React.FC = () => {
                 if (activeStep >= replayData.timeline.length - 1) setActiveStep(0);
                 setIsPlaying(!isPlaying);
               }}
-              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm"
+              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-slate-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm"
             >
               <Play className="w-3.5 h-3.5 fill-current" />
               {isPlaying ? 'Pause' : 'Replay Event'}
@@ -128,10 +128,10 @@ export const EventReplay: React.FC = () => {
 
         {/* Timeline Interactive Scrubber */}
         <div className="mt-4">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+          <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
             <span className="flex items-center gap-1.5 font-medium">
               <Clock className="w-3.5 h-3.5 text-blue-400" />
-              Scrubber Timestamp: <span className="font-mono text-slate-200 font-bold">{currentStep.timestamp}</span>
+              Scrubber Timestamp: <span className="text-slate-800 font-bold">{currentStep.timestamp}</span>
             </span>
             <span>{getWarningBadge(currentStep.warningLevel)}</span>
           </div>
@@ -145,13 +145,13 @@ export const EventReplay: React.FC = () => {
               setIsPlaying(false);
               setActiveStep(parseInt(e.target.value, 10));
             }}
-            className="w-full h-2 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-blue-500"
+            className="w-full h-2 bg-white rounded-lg appearance-none cursor-pointer accent-blue-500"
           />
 
-          <div className="mt-3 bg-slate-950/70 p-3 rounded-lg border border-slate-800 text-xs text-slate-300 flex items-start gap-2">
+          <div className="mt-3 bg-white/70 p-3 rounded-lg border border-slate-200 text-xs text-slate-700 flex items-start gap-2">
             <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
             <div>
-              <span className="font-semibold text-slate-200">Atmospheric Commentary: </span>
+              <span className="font-semibold text-slate-800">Atmospheric Commentary: </span>
               {currentStep.commentary}
             </div>
           </div>
@@ -159,24 +159,24 @@ export const EventReplay: React.FC = () => {
       </div>
 
       {/* Synchronized Multi-Parameter Charts */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-sm">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
-          <h3 className="text-base font-semibold text-white flex items-center gap-2">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200/80">
+          <h3 className="text-base font-semibold text-slate-800 flex items-center gap-2">
             <Activity className="w-4 h-4 text-blue-400" />
             Synchronized Multi-Parameter Evolution
           </h3>
-          <span className="text-xs text-slate-400">Precipitation (mm) • Wind (km/h) • Pressure (hPa)</span>
+          <span className="text-xs text-slate-500">Precipitation (mm) • Wind (km/h) • Pressure (hPa)</span>
         </div>
 
         <div className="h-80 w-full mt-4">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={replayData.timeline} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis dataKey="timestamp" stroke="#64748b" tick={{ fontSize: 10 }} />
               <YAxis yAxisId="left" stroke="#3b82f6" tick={{ fontSize: 11 }} />
               <YAxis yAxisId="right" orientation="right" stroke="#f59e0b" tick={{ fontSize: 11 }} />
               <Tooltip
-                contentStyle={{ backgroundColor: '#0b1329', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
+                contentStyle={{ backgroundColor: '#0b1329', borderColor: '#e2e8f0', borderRadius: '8px', fontSize: '12px' }}
               />
               <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
               <Bar yAxisId="left" dataKey="rainfall" fill="#3b82f6" name="Precipitation (mm)" radius={[3, 3, 0, 0]} />

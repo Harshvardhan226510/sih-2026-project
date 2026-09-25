@@ -34,14 +34,15 @@
   background-color: #f9fafb;
 }
 
-/* Chat Window */
 .chat-window {
   flex: 1;
+  min-height: 0;
   padding: 24px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  background-color: #f9fafb;
 }
 
 .empty-state {
@@ -308,14 +309,14 @@
   background-color: rgba(239, 68, 68, 0.4);
   border-radius: 50%;
   z-index: 0;
-  animation: pulse 1.5s infinite;
+  animation: chatbot-mic-pulse 1.5s infinite;
 }
 
 .mic-icon {
   z-index: 1;
 }
 
-@keyframes pulse {
+@keyframes chatbot-mic-pulse {
   0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
   70% { transform: scale(1.5); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
   100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }

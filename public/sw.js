@@ -23,7 +23,7 @@
  *  }
  */
 
-const CACHE_NAME = 'weathergpt-v1';
+const CACHE_NAME = 'weathergpt-v2';
 const SHELL_ASSETS = [
   '/',
   '/index.html',
@@ -31,7 +31,7 @@ const SHELL_ASSETS = [
 
 const APP_ORIGIN = self.location.origin;
 
-// ─── Install ──────────────────────────────────────────────────────────────────
+// ─── Install ─────────────────────────────────────────────────────────────────
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -40,7 +40,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// ─── Activate ─────────────────────────────────────────────────────────────────
+// ─── Activate ────────────────────────────────────────────────────────────────
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
@@ -51,7 +51,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// ─── Fetch ────────────────────────────────────────────────────────────────────
+// ─── Fetch ───────────────────────────────────────────────────────────────────
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
@@ -71,19 +71,16 @@ self.addEventListener('fetch', (event) => {
 
   if (request.method !== 'GET') return;
 
+  // Network-first strategy to ensure fresh UI during development/testing
   event.respondWith(
-    caches.match(request).then((cached) => {
-      const fetchPromise = fetch(request).then((response) => {
-        if (response.ok) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-        }
-        return response;
-      }).catch(() => {
-        return cached || new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
-      });
-
-      return cached || fetchPromise;
+    fetch(request).then((response) => {
+      if (response.ok) {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+      }
+      return response;
+    }).catch(() => {
+      return caches.match(request).then(cached => cached || new Response('Offline', { status: 503, statusText: 'Service Unavailable' }));
     })
   );
 });

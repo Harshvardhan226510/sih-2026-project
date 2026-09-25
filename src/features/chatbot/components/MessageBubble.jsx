@@ -10,6 +10,15 @@ const MessageBubble = ({ message, speak, stopAudio, isSpeaking, language }) => {
   return (
     <div className={`message-bubble-container ${isUser ? 'user-container' : 'bot-container'}`}>
       <div className={`message-bubble ${isUser ? 'user-bubble' : 'bot-bubble'}`}>
+        {message.attachedFileData && message.attachedFileData.base64 && (
+          <div className="mb-2 rounded-lg overflow-hidden border border-slate-200" style={{ maxWidth: '300px' }}>
+            <img 
+              src={`data:${message.attachedFileData.mimeType};base64,${message.attachedFileData.base64}`} 
+              alt="Attached file" 
+              className="w-full h-auto object-contain"
+            />
+          </div>
+        )}
         <div className="message-content">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {message.content}

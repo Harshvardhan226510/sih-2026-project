@@ -36,10 +36,11 @@ export const MapCanvas = ({ layers, radarFrames, currentFrameIndex, opacity, map
       case 'mapbox-satellite':
         return 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
       case 'mapbox-dark':
-        return 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
       case 'mapbox-streets':
       default:
         return 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+      case 'mapbox-terrain':
+        return 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png';
     }
   };
 
@@ -54,8 +55,6 @@ export const MapCanvas = ({ layers, radarFrames, currentFrameIndex, opacity, map
       center: [selectedLocation.lat || 20.5937, selectedLocation.lon || 78.9629],
       zoom: 5,
       zoomControl: false,
-      maxBounds: worldBounds,
-      maxBoundsViscosity: 1.0,
       minZoom: 3
     });
 
@@ -65,8 +64,7 @@ export const MapCanvas = ({ layers, radarFrames, currentFrameIndex, opacity, map
     const baseTile = L.tileLayer(tileUrl, {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
-      noWrap: true,
-      bounds: worldBounds
+      noWrap: true
     }).addTo(map);
 
     baseTileLayerRef.current = baseTile;
@@ -109,7 +107,33 @@ export const MapCanvas = ({ layers, radarFrames, currentFrameIndex, opacity, map
 
     mapInstanceRef.current = map;
 
+    // Force Leaflet to re-calculate size after the DOM layout settles.
+    // Flexbox layouts in React can sometimes take a frame or two to apply fully.
+    setTimeout(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    }, 500);
+
+    setTimeout(() => {
+      if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+    }, 100);
+    setTimeout(() => {
+      if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+    }, 500);
+    setTimeout(() => {
+      if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+    }, 1000);
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    });
+    resizeObserver.observe(mapContainerRef.current);
+
     return () => {
+      resizeObserver.disconnect();
       map.remove();
       mapInstanceRef.current = null;
     };
@@ -130,7 +154,7 @@ export const MapCanvas = ({ layers, radarFrames, currentFrameIndex, opacity, map
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 19,
       noWrap: true,
-      bounds: worldBounds
+      className: mapStyle === 'mapbox-dark' ? 'dark-map-filter' : ''
     }).addTo(mapInstanceRef.current);
 
     baseTileLayerRef.current = newTile;
@@ -233,11 +257,11 @@ export const MapCanvas = ({ layers, radarFrames, currentFrameIndex, opacity, map
     if (layers.temperature) {
       const owmTempUrl = `https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=${OWM_API_KEY}`;
       const tempLayer = L.tileLayer(owmTempUrl, {
-        opacity: 1.0,
+        opacity: 0.8,
         tileSize: 256,
         maxZoom: 19,
         zIndex: 400,
-        className: 'owm-thermal-tile-layer'
+        className: 'thermal-darken-filter'
       });
       tempLayer.addTo(mapInstanceRef.current);
       tempLayerRef.current = tempLayer;
@@ -350,7 +374,19 @@ export const MapCanvas = ({ layers, radarFrames, currentFrameIndex, opacity, map
 
   return (
     <>
-      <div ref={mapContainerRef} className="gis-map-canvas" />
+      <style>{`
+        .dark-map-filter {
+          filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+        }
+        .thermal-darken-filter {
+          filter: contrast(1.5) saturate(2) brightness(0.7);
+        }
+      `}</style>
+      <div 
+        ref={mapContainerRef} 
+        className="z-0 bg-slate-200"
+        style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}
+      />
       {layers.cyclone && mapInstanceRef.current && (
         <CycloneOverlay map={mapInstanceRef.current} />
       )}

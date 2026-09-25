@@ -6,6 +6,7 @@ import { LocationSearch } from './components/LocationSearch';
 import { AddCrop } from './components/AddCrop';
 import { PrimaryAdvisory } from './components/PrimaryAdvisory';
 import { Sidebar } from './components/Sidebar';
+import { LanguageSidebar } from './components/LanguageSidebar';
 import { copy, localAdvice, fallbackPlaces } from './utils/i18n';
 
 
@@ -145,13 +146,35 @@ export function FarmerDashboard() {
     setAdd(false);
   }
 
-  if (loading || !data) {
+  if (loading) {
     return (
       <main className="page-shell">
         <div className="atmosphere" />
         <section className="dashboard">
           <div className="content" style={{ display: 'grid', placeItems: 'center', height: '100%' }}>
             <h2>Fetching real-time weather from Open-Meteo...</h2>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (!data && !loading) {
+    return (
+      <main className="page-shell">
+        <div className="atmosphere" />
+        <section className="dashboard">
+          <div className="content" style={{ display: 'grid', placeItems: 'center', height: '100%', textAlign: 'center' }}>
+            <div>
+              <h2 style={{ color: '#ef4444', marginBottom: '1rem' }}>Failed to connect to the weather server</h2>
+              <p style={{ color: '#64748b', marginBottom: '2rem' }}>Please check if your backend servers are running.</p>
+              <button 
+                onClick={() => load(place)}
+                style={{ background: '#3b82f6', color: 'white', padding: '10px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                Retry Connection
+              </button>
+            </div>
           </div>
         </section>
       </main>
@@ -213,13 +236,18 @@ export function FarmerDashboard() {
               setActiveCrop={setActiveCrop}
               setSearch={setSearch}
             />
-            <Sidebar
-              data={data}
-              text={text}
-              activeCrop={activeCrop}
-              setActiveCrop={setActiveCrop}
-              setSearch={setSearch}
-            />
+            <div>
+              <Sidebar
+                data={data}
+                text={text}
+                activeCrop={activeCrop}
+                setActiveCrop={setActiveCrop}
+                setSearch={setSearch}
+              />
+              <div style={{ marginTop: '26px' }}>
+                <LanguageSidebar language={language} setLanguage={setLanguage} />
+              </div>
+            </div>
           </div>
 
           <footer>

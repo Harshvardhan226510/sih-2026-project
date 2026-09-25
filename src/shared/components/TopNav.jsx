@@ -30,10 +30,9 @@ export function TopNav() {
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
-                  isActive
-                    ? 'bg-blue-600 text-white shadow-sm font-semibold'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                `px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${isActive
+                  ? 'bg-blue-600 text-white shadow-sm font-semibold'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
                 }`
               }
             >

@@ -7,7 +7,6 @@ export function Header({ data, language, setLanguage, add, setAdd, search, setSe
     <header>
       <div>
         <p className="welcome">{text.welcome}</p>
-        <h2>{data.farmer.name}</h2>
       </div>
       <div className="header-actions">
         <select

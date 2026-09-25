@@ -48,7 +48,7 @@ export const AnomalyAnalysis: React.FC<Props> = ({
 
   if (loading) {
     return (
-      <div className="h-64 flex items-center justify-center text-slate-400">
+      <div className="h-64 flex items-center justify-center text-slate-500">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
       </div>
     );
@@ -88,16 +88,16 @@ export const AnomalyAnalysis: React.FC<Props> = ({
   return (
     <div className="space-y-6">
       {/* Feature 11: Configurable Baseline Period Selector */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Sliders className="w-4 h-4 text-blue-400" />
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-800">
                 Climatological Baseline Reference Period
               </span>
-              <p className="text-[11px] text-slate-400">
-                Current: <strong className="text-slate-200">{anomalyData.baselinePeriod.baselineLabel || `${anomalyData.baselinePeriod.start} → ${anomalyData.baselinePeriod.end}`}</strong>
+              <p className="text-[11px] text-slate-500">
+                Current: <strong className="text-slate-800">{anomalyData.baselinePeriod.baselineLabel || `${anomalyData.baselinePeriod.start} → ${anomalyData.baselinePeriod.end}`}</strong>
               </p>
             </div>
           </div>
@@ -108,7 +108,7 @@ export const AnomalyAnalysis: React.FC<Props> = ({
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                 baselinePreset === '1991_2020'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-slate-200'
+                  : 'bg-white text-slate-500 border border-slate-200 hover:text-slate-800'
               }`}
             >
               WMO Standard (1991–2020)
@@ -118,7 +118,7 @@ export const AnomalyAnalysis: React.FC<Props> = ({
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                 baselinePreset === '10year_prior'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-slate-200'
+                  : 'bg-white text-slate-500 border border-slate-200 hover:text-slate-800'
               }`}
             >
               10-Year Prior Window
@@ -128,7 +128,7 @@ export const AnomalyAnalysis: React.FC<Props> = ({
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                 baselinePreset === 'custom'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-slate-950 text-slate-400 border border-slate-800 hover:text-slate-200'
+                  : 'bg-white text-slate-500 border border-slate-200 hover:text-slate-800'
               }`}
             >
               Custom Window
@@ -137,23 +137,23 @@ export const AnomalyAnalysis: React.FC<Props> = ({
         </div>
 
         {baselinePreset === 'custom' && (
-          <div className="mt-3 pt-3 border-t border-slate-800 flex items-center gap-2">
+          <div className="mt-3 pt-3 border-t border-slate-200 flex items-center gap-2">
             <input
               type="date"
               value={customBaseStart}
               onChange={(e) => setCustomBaseStart(e.target.value)}
-              className="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-2.5 py-1 font-mono"
+              className="bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-2.5 py-1 "
             />
             <span className="text-slate-500">→</span>
             <input
               type="date"
               value={customBaseEnd}
               onChange={(e) => setCustomBaseEnd(e.target.value)}
-              className="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-2.5 py-1 font-mono"
+              className="bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-2.5 py-1 "
             />
             <button
               onClick={handleApplyCustomBaseline}
-              className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold"
+              className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-slate-800 rounded-lg text-xs font-semibold"
             >
               Apply Baseline
             </button>
@@ -167,27 +167,27 @@ export const AnomalyAnalysis: React.FC<Props> = ({
           ? 'bg-rose-950/40 border-rose-800/80 shadow-rose-950/20 shadow-lg'
           : isHigh
           ? 'bg-amber-950/40 border-amber-800/80 shadow-amber-950/20 shadow-lg'
-          : 'bg-slate-900/90 border-slate-800'
+          : 'bg-white border-slate-200'
       }`}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <Flame className={`w-5 h-5 ${isExtreme ? 'text-rose-400' : isHigh ? 'text-amber-400' : 'text-emerald-400'}`} />
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
                 Weather Anomaly Detection Engine
               </span>
             </div>
-            <h2 className="text-2xl font-extrabold text-white mt-1">
+            <h2 className="text-2xl font-extrabold text-slate-800 mt-1">
               {anomalyData.location}
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Evaluation Period: <span className="font-mono text-slate-200">{anomalyData.targetPeriod.start} → {anomalyData.targetPeriod.end}</span> vs Baseline: <span className="font-mono text-slate-300">{anomalyData.baselinePeriod.start} → {anomalyData.baselinePeriod.end}</span>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Evaluation Period: <span className="text-slate-800">{anomalyData.targetPeriod.start} → {anomalyData.targetPeriod.end}</span> vs Baseline: <span className="text-slate-700">{anomalyData.baselinePeriod.start} → {anomalyData.baselinePeriod.end}</span>
             </p>
           </div>
 
           {/* Anomaly Badge */}
           <div className="flex items-center gap-3">
-            <div className={`px-4 py-2.5 rounded-xl border text-center font-mono ${
+            <div className={`px-4 py-2.5 rounded-xl border text-center ${
               isExtreme
                 ? 'bg-rose-900/70 border-rose-700 text-rose-200'
                 : isHigh
@@ -206,9 +206,9 @@ export const AnomalyAnalysis: React.FC<Props> = ({
 
         {/* 3 Metric Cards: Baseline vs Observed vs Net Anomaly */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-          <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800">
-            <div className="text-xs font-semibold text-slate-400 uppercase">Historical Baseline Normal</div>
-            <div className="text-2xl font-bold font-mono text-slate-200 mt-1">
+          <div className="bg-white/70 p-4 rounded-xl border border-slate-200">
+            <div className="text-xs font-semibold text-slate-500 uppercase">Historical Baseline Normal</div>
+            <div className="text-2xl font-bold text-slate-800 mt-1">
               {anomalyData.historicalBaseline} {unit}
             </div>
             <div className="text-[11px] text-slate-500 mt-1">
@@ -216,9 +216,9 @@ export const AnomalyAnalysis: React.FC<Props> = ({
             </div>
           </div>
 
-          <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800">
-            <div className="text-xs font-semibold text-slate-400 uppercase">Evaluation Observed Value</div>
-            <div className="text-2xl font-bold font-mono text-white mt-1">
+          <div className="bg-white/70 p-4 rounded-xl border border-slate-200">
+            <div className="text-xs font-semibold text-slate-500 uppercase">Evaluation Observed Value</div>
+            <div className="text-2xl font-bold text-slate-800 mt-1">
               {anomalyData.observedValue} {unit}
             </div>
             <div className="text-[11px] text-slate-500 mt-1">
@@ -226,12 +226,12 @@ export const AnomalyAnalysis: React.FC<Props> = ({
             </div>
           </div>
 
-          <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800">
-            <div className="text-xs font-semibold text-slate-400 uppercase">Net Departure & Z-Score</div>
-            <div className={`text-2xl font-bold font-mono mt-1 ${anomalyData.anomaly >= 0 ? 'text-amber-400' : 'text-cyan-400'}`}>
+          <div className="bg-white/70 p-4 rounded-xl border border-slate-200">
+            <div className="text-xs font-semibold text-slate-500 uppercase">Net Departure & Z-Score</div>
+            <div className={`text-2xl font-bold mt-1 ${anomalyData.anomaly >= 0 ? 'text-amber-400' : 'text-cyan-400'}`}>
               {anomalyData.anomaly > 0 ? `+${anomalyData.anomaly}` : anomalyData.anomaly} {unit}
             </div>
-            <div className="text-[11px] text-slate-400 mt-1 font-mono">
+            <div className="text-[11px] text-slate-500 mt-1 ">
               Z-Score: <strong>{anomalyData.zScore}σ</strong> ({anomalyData.anomalyPercentage > 0 ? '+' : ''}{anomalyData.anomalyPercentage}%)
             </div>
           </div>
@@ -239,24 +239,24 @@ export const AnomalyAnalysis: React.FC<Props> = ({
       </div>
 
       {/* Feature 4: Automatic Anomaly Detection Table */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800/80 mb-4 gap-3">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-200/80 mb-4 gap-3">
           <div>
-            <h3 className="text-base font-semibold text-white flex items-center gap-2">
+            <h3 className="text-base font-semibold text-slate-800 flex items-center gap-2">
               <Activity className="w-4 h-4 text-rose-400" />
               Automatic Anomaly Detection Engine
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               {anomalyData.detectedAnomaliesSummary}
             </p>
           </div>
 
           <div className="flex items-center gap-2">
-            <Filter className="w-3.5 h-3.5 text-slate-400" />
+            <Filter className="w-3.5 h-3.5 text-slate-500" />
             <select
               value={anomalyFilter}
               onChange={(e) => setAnomalyFilter(e.target.value as any)}
-              className="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none"
+              className="bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none"
             >
               <option value="ALL">All Significant Anomalies</option>
               <option value="POSITIVE">Positive Surges (+)</option>
@@ -267,9 +267,9 @@ export const AnomalyAnalysis: React.FC<Props> = ({
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs font-mono">
+          <table className="w-full text-left text-xs ">
             <thead>
-              <tr className="border-b border-slate-800 text-slate-400 font-semibold uppercase text-[10px] font-sans">
+              <tr className="border-b border-slate-200 text-slate-500 font-semibold uppercase text-[10px] font-sans">
                 <th className="pb-2.5">Date</th>
                 <th className="pb-2.5">Observed</th>
                 <th className="pb-2.5">Baseline Reference</th>
@@ -282,15 +282,15 @@ export const AnomalyAnalysis: React.FC<Props> = ({
             <tbody className="divide-y divide-slate-800/60">
               {filteredDetectedAnomalies.length > 0 ? (
                 filteredDetectedAnomalies.map((anom) => (
-                  <tr key={anom.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-2.5 font-bold text-slate-200">{anom.date}</td>
-                    <td className="py-2.5 text-white font-bold">{anom.observedValue} {anom.unit}</td>
-                    <td className="py-2.5 text-slate-400">{anom.baselineReference} {anom.unit}</td>
+                  <tr key={anom.id} className="hover:bg-slate-100/40 transition-colors">
+                    <td className="py-2.5 font-bold text-slate-800">{anom.date}</td>
+                    <td className="py-2.5 text-slate-800 font-bold">{anom.observedValue} {anom.unit}</td>
+                    <td className="py-2.5 text-slate-500">{anom.baselineReference} {anom.unit}</td>
                     <td className={`py-2.5 font-bold ${anom.anomalyMagnitude >= 0 ? 'text-amber-400' : 'text-cyan-400'}`}>
                       {anom.anomalyMagnitude > 0 ? `+${anom.anomalyMagnitude}` : anom.anomalyMagnitude} {anom.unit} ({anom.anomalyPercentage > 0 ? `+${anom.anomalyPercentage}` : anom.anomalyPercentage}%)
                     </td>
-                    <td className="py-2.5 text-slate-300 font-bold">{anom.zScore}σ</td>
-                    <td className="py-2.5 font-sans text-slate-400 text-[11px] max-w-xs truncate">
+                    <td className="py-2.5 text-slate-700 font-bold">{anom.zScore}σ</td>
+                    <td className="py-2.5 font-sans text-slate-500 text-[11px] max-w-xs truncate">
                       {anom.methodology}
                     </td>
                     <td className="py-2.5 font-sans">
@@ -319,12 +319,12 @@ export const AnomalyAnalysis: React.FC<Props> = ({
       </div>
 
       {/* Daily Time-Series Anomaly Chart */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-sm">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800/80 mb-4">
-          <h3 className="text-base font-semibold text-white">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 mb-4">
+          <h3 className="text-base font-semibold text-slate-800">
             Daily Observation vs Baseline Normal Timeline
           </h3>
-          <span className="text-xs text-slate-400 font-mono">
+          <span className="text-xs text-slate-500 ">
             {anomalyData.timeSeries.length} Days Evaluated
           </span>
         </div>
@@ -332,7 +332,7 @@ export const AnomalyAnalysis: React.FC<Props> = ({
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={anomalyData.timeSeries}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis 
                 dataKey="date" 
                 stroke="#64748b" 
@@ -341,7 +341,7 @@ export const AnomalyAnalysis: React.FC<Props> = ({
               />
               <YAxis stroke="#64748b" fontSize={11} unit={unit} />
               <Tooltip 
-                contentStyle={{ backgroundColor: '#020617', borderColor: '#1e293b', borderRadius: '0.5rem' }}
+                contentStyle={{ backgroundColor: '#020617', borderColor: '#e2e8f0', borderRadius: '0.5rem' }}
               />
               <Legend />
               <Bar 
@@ -373,7 +373,7 @@ export const AnomalyAnalysis: React.FC<Props> = ({
       </div>
 
       {/* Analytical Narrative */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 text-xs text-slate-300 flex items-start gap-3">
+      <div className="bg-white border border-slate-200 rounded-xl p-4 text-xs text-slate-700 flex items-start gap-3">
         <Sparkles className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
         <div>
           <strong className="text-rose-300 block mb-1">Climatological Departure Synthesis:</strong>

@@ -91,17 +91,17 @@ export const HistoricalExplorer: React.FC<Props> = ({
   return (
     <div className="space-y-6">
       {/* Control / Filter Bar */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {/* Location Picker */}
           <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
               Target Location
             </label>
             <select
               value={selectedLocation}
               onChange={(e) => onLocationChange(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+              className="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
             >
               <option value="Pune">Pune, Maharashtra</option>
               <option value="Mumbai">Mumbai, Maharashtra</option>
@@ -119,13 +119,13 @@ export const HistoricalExplorer: React.FC<Props> = ({
 
           {/* Meteorological Parameter */}
           <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
               Meteorological Variable
             </label>
             <select
               value={selectedMetric}
               onChange={(e) => onMetricChange(e.target.value as WeatherMetric)}
-              className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+              className="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
             >
               <option value="rainfall">Precipitation / Rainfall (mm)</option>
               <option value="temperature">Mean Air Temperature (°C)</option>
@@ -140,13 +140,13 @@ export const HistoricalExplorer: React.FC<Props> = ({
 
           {/* Aggregation Interval */}
           <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
               Temporal Aggregation
             </label>
             <select
               value={selectedAggregation}
               onChange={(e) => onAggregationChange(e.target.value as AggregationPeriod)}
-              className="w-full bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+              className="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
             >
               <option value="daily">Daily Aggregation</option>
               <option value="weekly">Weekly Sum/Mean</option>
@@ -157,7 +157,7 @@ export const HistoricalExplorer: React.FC<Props> = ({
 
           {/* Date Range Inputs */}
           <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
               Date Range (Start → End)
             </label>
             <div className="flex items-center gap-1.5">
@@ -165,14 +165,14 @@ export const HistoricalExplorer: React.FC<Props> = ({
                 type="date"
                 value={startDate}
                 onChange={(e) => onDateChange(e.target.value, endDate)}
-                className="w-1/2 bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-500"
+                className="w-1/2 bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-500"
               />
               <span className="text-slate-500 text-xs">→</span>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => onDateChange(startDate, e.target.value)}
-                className="w-1/2 bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-500"
+                className="w-1/2 bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-500"
               />
             </div>
           </div>
@@ -180,25 +180,25 @@ export const HistoricalExplorer: React.FC<Props> = ({
       </div>
 
       {/* Interactive Time Series Chart Card */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800/80">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200/80">
           <div>
-            <h3 className="text-base font-semibold text-white flex items-center gap-2">
+            <h3 className="text-base font-semibold text-slate-800 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-blue-400" />
               Historical {selectedMetric.toUpperCase()} Time Series
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               {data?.location} • {data?.dataPoints.length} aggregated time steps ({startDate} to {endDate})
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             {/* Chart Type Toggle */}
-            <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5">
+            <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5">
               <button
                 onClick={() => setChartType('line')}
                 className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors flex items-center gap-1 ${
-                  chartType === 'line' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                  chartType === 'line' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
                 <TrendingUp className="w-3.5 h-3.5" /> Line
@@ -206,7 +206,7 @@ export const HistoricalExplorer: React.FC<Props> = ({
               <button
                 onClick={() => setChartType('bar')}
                 className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors flex items-center gap-1 ${
-                  chartType === 'bar' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-slate-200'
+                  chartType === 'bar' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
                 <BarChart2 className="w-3.5 h-3.5" /> Bar
@@ -217,7 +217,7 @@ export const HistoricalExplorer: React.FC<Props> = ({
             <button
               onClick={() => setShowMA7(!showMA7)}
               className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors flex items-center gap-1 ${
-                showMA7 ? 'bg-amber-950/60 border-amber-800 text-amber-300' : 'bg-slate-950 border-slate-800 text-slate-400'
+                showMA7 ? 'bg-amber-950/60 border-amber-800 text-amber-300' : 'bg-white border-slate-200 text-slate-500'
               }`}
             >
               7-Step MA
@@ -225,7 +225,7 @@ export const HistoricalExplorer: React.FC<Props> = ({
             <button
               onClick={() => setShowMA30(!showMA30)}
               className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors flex items-center gap-1 ${
-                showMA30 ? 'bg-emerald-950/60 border-emerald-800 text-emerald-300' : 'bg-slate-950 border-slate-800 text-slate-400'
+                showMA30 ? 'bg-emerald-950/60 border-emerald-800 text-emerald-300' : 'bg-white border-slate-200 text-slate-500'
               }`}
             >
               30-Step MA
@@ -234,7 +234,7 @@ export const HistoricalExplorer: React.FC<Props> = ({
             {/* Export CSV */}
             <button
               onClick={handleExportCSV}
-              className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 transition-colors flex items-center gap-1.5"
+              className="px-3 py-1 bg-slate-100 hover:bg-slate-100 text-slate-800 text-xs font-medium rounded-lg border border-slate-200 transition-colors flex items-center gap-1.5"
             >
               <Download className="w-3.5 h-3.5 text-blue-400" />
               Export CSV
@@ -252,11 +252,11 @@ export const HistoricalExplorer: React.FC<Props> = ({
             <ResponsiveContainer width="100%" height="100%">
               {chartType === 'line' ? (
                 <LineChart data={data.dataPoints} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                   <XAxis dataKey="date" stroke="#64748b" tick={{ fontSize: 11 }} />
                   <YAxis stroke="#64748b" tick={{ fontSize: 11 }} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#0b1329', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
+                    contentStyle={{ backgroundColor: '#0b1329', borderColor: '#e2e8f0', borderRadius: '8px', fontSize: '12px' }}
                     formatter={(val: any, name: string) => [`${val} ${unit}`, name]}
                   />
                   <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
@@ -266,11 +266,11 @@ export const HistoricalExplorer: React.FC<Props> = ({
                 </LineChart>
               ) : (
                 <BarChart data={data.dataPoints} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                   <XAxis dataKey="date" stroke="#64748b" tick={{ fontSize: 11 }} />
                   <YAxis stroke="#64748b" tick={{ fontSize: 11 }} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#0b1329', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
+                    contentStyle={{ backgroundColor: '#0b1329', borderColor: '#e2e8f0', borderRadius: '8px', fontSize: '12px' }}
                     formatter={(val: any) => [`${val} ${unit}`, `Observed (${unit})`]}
                   />
                   <Bar dataKey="value" fill="#3b82f6" radius={[3, 3, 0, 0]} name={`Observed (${unit})`} />
@@ -287,46 +287,46 @@ export const HistoricalExplorer: React.FC<Props> = ({
 
       {/* Statistical Distribution Table */}
       {data && (
-        <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-sm">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
-            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200/80">
+            <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
               <Table className="w-4 h-4 text-indigo-400" />
               Climatological Distribution & Percentile Metrics
             </h3>
-            <span className="text-xs text-slate-400">Sample size: {data.provenance.observationCount} observations</span>
+            <span className="text-xs text-slate-500">Sample size: {data.provenance.observationCount} observations</span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mt-4 text-xs font-mono">
-            <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-              <div className="text-slate-400 text-[11px] font-sans">MINIMUM</div>
-              <div className="text-base font-bold text-slate-200 mt-1">{data.summary.min} {unit}</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mt-4 text-xs ">
+            <div className="bg-white p-3 rounded-lg border border-slate-200">
+              <div className="text-slate-500 text-[11px] font-sans">MINIMUM</div>
+              <div className="text-base font-bold text-slate-800 mt-1">{data.summary.min} {unit}</div>
             </div>
-            <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-              <div className="text-slate-400 text-[11px] font-sans">MEAN</div>
+            <div className="bg-white p-3 rounded-lg border border-slate-200">
+              <div className="text-slate-500 text-[11px] font-sans">MEAN</div>
               <div className="text-base font-bold text-blue-400 mt-1">{data.summary.mean} {unit}</div>
             </div>
-            <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-              <div className="text-slate-400 text-[11px] font-sans">MEDIAN (P50)</div>
-              <div className="text-base font-bold text-slate-200 mt-1">{data.summary.median} {unit}</div>
+            <div className="bg-white p-3 rounded-lg border border-slate-200">
+              <div className="text-slate-500 text-[11px] font-sans">MEDIAN (P50)</div>
+              <div className="text-base font-bold text-slate-800 mt-1">{data.summary.median} {unit}</div>
             </div>
-            <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-              <div className="text-slate-400 text-[11px] font-sans">MAXIMUM</div>
+            <div className="bg-white p-3 rounded-lg border border-slate-200">
+              <div className="text-slate-500 text-[11px] font-sans">MAXIMUM</div>
               <div className="text-base font-bold text-rose-400 mt-1">{data.summary.max} {unit}</div>
             </div>
-            <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-              <div className="text-slate-400 text-[11px] font-sans">STD DEV (σ)</div>
-              <div className="text-base font-bold text-slate-300 mt-1">{data.summary.stdDev}</div>
+            <div className="bg-white p-3 rounded-lg border border-slate-200">
+              <div className="text-slate-500 text-[11px] font-sans">STD DEV (σ)</div>
+              <div className="text-base font-bold text-slate-700 mt-1">{data.summary.stdDev}</div>
             </div>
-            <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-              <div className="text-slate-400 text-[11px] font-sans">25th %ILE</div>
-              <div className="text-base font-bold text-slate-300 mt-1">{data.summary.p25} {unit}</div>
+            <div className="bg-white p-3 rounded-lg border border-slate-200">
+              <div className="text-slate-500 text-[11px] font-sans">25th %ILE</div>
+              <div className="text-base font-bold text-slate-700 mt-1">{data.summary.p25} {unit}</div>
             </div>
-            <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-              <div className="text-slate-400 text-[11px] font-sans">75th %ILE</div>
-              <div className="text-base font-bold text-slate-300 mt-1">{data.summary.p75} {unit}</div>
+            <div className="bg-white p-3 rounded-lg border border-slate-200">
+              <div className="text-slate-500 text-[11px] font-sans">75th %ILE</div>
+              <div className="text-base font-bold text-slate-700 mt-1">{data.summary.p75} {unit}</div>
             </div>
-            <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-              <div className="text-slate-400 text-[11px] font-sans">95th %ILE</div>
+            <div className="bg-white p-3 rounded-lg border border-slate-200">
+              <div className="text-slate-500 text-[11px] font-sans">95th %ILE</div>
               <div className="text-base font-bold text-amber-400 mt-1">{data.summary.p95} {unit}</div>
             </div>
           </div>

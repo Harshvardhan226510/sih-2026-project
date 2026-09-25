@@ -1,142 +1,66 @@
-import { getSeverityConfig, formatTimeAgo, formatTime, getWeatherImageForEvent } from '../utils.js';
+import { getSeverityConfig, formatTimeAgo, formatTime } from '../utils.js';
 
-export function AlertCard({ alert, onClick, isSelected, isPrimary, location }) {
+export function AlertCard({ alert, onClick, isSelected, location }) {
   const sev = getSeverityConfig(alert.severity);
   const isExpired = alert.status === 'EXPIRED';
-  const isUpdated = alert.version > 1;
-  const isLocal = location?.district && alert.area?.includes(location.district);
-  const bgImage = getWeatherImageForEvent(alert.event);
+  const isLocal = location?.district && alert.area?.toLowerCase().includes(location.district.toLowerCase());
 
-  // ==========================================
-  // 1. PRIMARY PRIORITY ALERT CARD
-  // ==========================================
-  if (isPrimary) {
-    return (
-      <article
-        className={`primary-alert-card ${isSelected ? 'selected' : ''}`}
-        onClick={() => onClick(alert)}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(alert); } }}
-        tabIndex={0}
-        role="button"
-        aria-label={`Primary Alert: ${alert.event}, ${sev.label} severity, ${alert.area || 'Unknown area'}`}
-      >
-        <div 
-          className="primary-hero-bg-wrapper" 
-          style={{ backgroundImage: `url('${bgImage}')` }}
-        >
-          <div className="primary-hero-gradient-overlay" />
-
-          {/* Top Badges Row */}
-          <div className="primary-hero-top-row">
-            <div className="primary-badges-group">
-              <span className="badge-extreme-primary" style={{ backgroundColor: sev.color }}>
-                <span>{sev.icon}</span> {sev.label}
-              </span>
-              <span className="badge-imd-verified">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>
-                VERIFIED IMD
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {isLocal && (
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-500/80 text-white">
-                  NEAR YOU
-                </span>
-              )}
-              {isExpired && (
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-800 text-slate-400">
-                  EXPIRED
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Alert Title & Location in Hero Image */}
-          <div className="primary-hero-content">
-            <h3 className="primary-event-heading">{alert.event}</h3>
-            <div className="primary-location-row">
-              <span>📍</span>
-              <span className="truncate">{alert.area || 'Area not specified'}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Primary Description & Metadata Footer */}
-        <div className="primary-info-footer">
-          {alert.description && (
-            <p className="primary-description-text">{alert.description}</p>
-          )}
-
-          <div className="primary-meta-action-row">
-            <div className="meta-timestamps-group">
-              <span>Issued {formatTimeAgo(alert.issuedAt)}</span>
-              {alert.expiresAt && <span>•</span>}
-              {alert.expiresAt && <span>Expires {formatTime(alert.expiresAt)}</span>}
-            </div>
-
-            <button className="action-cta-btn" tabIndex={-1}>
-              <span>View Details</span>
-              <span aria-hidden="true">→</span>
-            </button>
-          </div>
-        </div>
-      </article>
-    );
-  }
-
-  // ==========================================
-  // 2. COMPACT SECONDARY ALERT CARD (2-Col Grid)
-  // ==========================================
   return (
     <article
-      className={`secondary-alert-card ${alert.severity?.toLowerCase() || 'moderate'} ${isSelected ? 'selected' : ''}`}
+      className={`relative px-6 py-4 transition-colors cursor-pointer group flex items-center justify-between outline-none ${isSelected ? 'bg-blue-50/50' : 'hover:bg-slate-50 bg-white'}`}
       onClick={() => onClick(alert)}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(alert); } }}
       tabIndex={0}
-      role="button"
-      aria-label={`${alert.event}, ${sev.label} severity, ${alert.area || 'Unknown area'}`}
+      role="row"
+      aria-label={`${alert.type || alert.event}, ${sev.label} severity, ${alert.area || 'Unknown area'}`}
     >
-      <div className="secondary-card-header">
-        <span className={`secondary-severity-badge ${alert.severity?.toLowerCase() || 'moderate'}`}>
-          <span>{sev.icon}</span> {sev.label}
-        </span>
-
-        <span className="badge-imd-verified" style={{ fontSize: '9px', padding: '2px 6px' }}>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          </svg>
-          VERIFIED IMD
-        </span>
-      </div>
-
-      <div className="secondary-card-body">
-        <h4 className="secondary-event-title">{alert.event}</h4>
-        <div className="secondary-location-text">
-          <span>📍</span>
-          <span className="truncate">{alert.area || 'Region unspecified'}</span>
-          {isLocal && (
-            <span className="text-[9px] font-bold text-blue-400 ml-1 uppercase">Local</span>
+      {/* Selection Indicator */}
+      {isSelected && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-r-md" aria-hidden="true" />}
+      
+      {/* 1. Severity & Event */}
+      <div className="flex-[2] flex flex-col pr-4 border-r border-slate-100 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: sev.color }} aria-hidden="true" />
+          <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
+            {sev.label}
+          </span>
+          {isExpired && (
+            <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+              Expired
+            </span>
           )}
         </div>
-        {alert.description && (
-          <p className="secondary-description-snippet">{alert.description}</p>
+        <h4 className="text-sm font-semibold text-slate-900 leading-tight truncate group-hover:text-blue-700 transition-colors">
+          {alert.type || alert.title || alert.event || 'Weather Alert'}
+        </h4>
+      </div>
+
+      {/* 2. Target Area */}
+      <div className="flex-[3] px-4 border-r border-slate-100 min-w-0 flex flex-col justify-center">
+        <div className="flex items-start text-xs font-medium text-slate-700">
+          <span className="mr-1.5 text-slate-400 mt-0.5 flex-shrink-0">📍</span>
+          <span className="line-clamp-2 leading-snug">{alert.area || 'Region not specified'}</span>
+        </div>
+        {isLocal && (
+          <span className="mt-1.5 self-start text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
+            Near You
+          </span>
         )}
       </div>
 
-      <div className="secondary-card-footer">
-        <div className="meta-timestamps-group">
-          <span>Issued {formatTimeAgo(alert.issuedAt)}</span>
-          {alert.expiresAt && <span>•</span>}
-          {alert.expiresAt && <span>Expires {formatTime(alert.expiresAt)}</span>}
+      {/* 3. Validity Period */}
+      <div className="flex-[2] pl-4 flex items-center justify-end min-w-0">
+        <div className="text-[11px] text-right font-medium text-slate-500 flex flex-col justify-center">
+          <span className="whitespace-nowrap">Issued {formatTimeAgo(alert.issued_at || alert.issuedAt)}</span>
+          {(alert.valid_to || alert.expiresAt) && (
+            <span className="whitespace-nowrap mt-0.5">Expires {formatTime(alert.valid_to || alert.expiresAt)}</span>
+          )}
         </div>
-
-        <button className="action-cta-btn" tabIndex={-1}>
-          <span>View Details</span>
-          <span aria-hidden="true">→</span>
-        </button>
+        <div className="ml-4 text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all flex-shrink-0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </div>
       </div>
     </article>
   );

@@ -25,17 +25,34 @@ export const WindDirectionLayer = ({ map }) => {
     const group = L.layerGroup();
 
     windPoints.forEach((point) => {
+      // Animation speed based on wind speed (faster wind = shorter animation duration)
+      const animDuration = Math.max(0.5, 2.5 - (point.speed / 20)); 
+
       const arrowIcon = L.divIcon({
         className: 'wind-arrow-marker-icon',
-        html: `<div class="wind-arrow-wrapper">` +
-          `<div class="wind-arrow-disc" style="transform: rotate(${point.angle}deg);">` +
-          `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">` +
-          `<line x1="12" y1="19" x2="12" y2="5"></line>` +
-          `<polyline points="5 12 12 5 19 12"></polyline>` +
-          `</svg>` +
-          `</div>` +
-          `<span class="wind-speed-badge">${point.speed} km/h</span>` +
-          `</div>`,
+        html: `
+          <style>
+            @keyframes windFlowAnim_${point.angle} {
+              0% { transform: translateY(10px) scale(0.8); opacity: 0; }
+              20% { opacity: 1; }
+              80% { transform: translateY(-15px) scale(1.1); opacity: 1; }
+              100% { transform: translateY(-20px) scale(0.8); opacity: 0; }
+            }
+          </style>
+          <div style="position: relative; width: 44px; height: 44px;">
+            <div style="position: absolute; inset: 0; transform: rotate(${point.angle}deg);">
+              <svg 
+                style="animation: windFlowAnim_${point.angle} ${animDuration}s infinite ease-in-out; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"
+                width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="19" x2="12" y2="5"></line>
+                <polyline points="5 12 12 5 19 12"></polyline>
+              </svg>
+            </div>
+            <div style="position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: white; padding: 2px 6px; border-radius: 12px; font-size: 10px; font-weight: 800; color: #0284c7; box-shadow: 0 2px 6px rgba(0,0,0,0.15); border: 1px solid #e0f2fe; z-index: 10;">
+              ${point.speed} km/h
+            </div>
+          </div>
+        `,
         iconSize: [44, 44],
         iconAnchor: [22, 22]
       });
@@ -44,9 +61,9 @@ export const WindDirectionLayer = ({ map }) => {
 
       marker.bindPopup(
         `<div style="font-family:Inter,system-ui,sans-serif;min-width:160px">` +
-        `<div style="font-weight:700;font-size:13px;color:#38bdf8;margin-bottom:4px">💨 Wind Bearing Vector</div>` +
+        `<div style="font-weight:700;font-size:13px;color:#0ea5e9;margin-bottom:4px">💨 Wind Vector</div>` +
         `<div style="font-size:12px;font-weight:600;color:#0f172a">${point.sector}</div>` +
-        `<div style="font-size:11px;color:#475569"><b>Speed:</b> ${point.speed} km/h</div>` +
+        `<div style="font-size:11px;color:#475569;margin-top:4px"><b>Speed:</b> ${point.speed} km/h</div>` +
         `<div style="font-size:11px;color:#475569"><b>Direction Angle:</b> ${point.angle}°</div>` +
         `</div>`
       );
@@ -66,3 +83,5 @@ export const WindDirectionLayer = ({ map }) => {
 
   return null;
 };
+
+export default WindDirectionLayer;

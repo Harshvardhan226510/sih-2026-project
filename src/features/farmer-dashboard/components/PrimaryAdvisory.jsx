@@ -1,5 +1,5 @@
 import React from 'react';
-import { MandiSchemes } from './MandiSchemes';
+import { SmartAdvisories } from './SmartAdvisories';
 
 export function PrimaryAdvisory({ data, activeCrop, advice, day, setDay, text, language, setActiveCrop, setSearch }) {
   const currentDay = data.forecast[day] || data.forecast[0];
@@ -31,13 +31,13 @@ export function PrimaryAdvisory({ data, activeCrop, advice, day, setDay, text, l
               {language === 'en'
                 ? 'Do not spray before rain or in strong wind.'
                 : language === 'hi'
-                ? 'बारिश या तेज हवा से पहले छिड़काव न करें।'
-                : 'पावसापूर्वी किंवा जोराच्या वाऱ्यात फवारणी करू नका.'}
+                  ? 'बारिश या तेज हवा से पहले छिड़काव न करें।'
+                  : 'पावसापूर्वी किंवा जोराच्या वाऱ्यात फवारणी करू नका.'}
             </p>
           </div>
         </article>
       </div>
-      
+
       <div className="forecast">
         <svg viewBox="0 0 700 150" preserveAspectRatio="none">
           <path d="M0 110 C70 95 80 120 150 92 S250 70 300 98 S390 128 450 78 S550 50 600 82 S650 110 700 65" />
@@ -55,7 +55,7 @@ export function PrimaryAdvisory({ data, activeCrop, advice, day, setDay, text, l
           ))}
         </div>
       </div>
-      
+
       <div className="days">
         {data.forecast.map((x, i) => (
           <button
@@ -67,26 +67,13 @@ export function PrimaryAdvisory({ data, activeCrop, advice, day, setDay, text, l
           </button>
         ))}
       </div>
-      
+
       <p className="selection">
         {text.forecast} {currentDay.day}, {currentDay.temperature}°C · {text.rain}:{' '}
         {currentDay.rainProbability ?? '—'}%
       </p>
 
-      <MandiSchemes data={data} />
-
-      <section className="today-actions" aria-label="Simple farm tasks">
-        <h2>Today on your farm</h2>
-        <button onClick={() => setActiveCrop(data.crops[0])}>
-          💧 Check soil before watering <span>Tap to see crop advice</span>
-        </button>
-        <button onClick={() => document.querySelector('.primary')?.scrollIntoView({ behavior: 'smooth' })}>
-          🌦 Check rain before spraying <span>{data.current.rainProbability}% rain chance</span>
-        </button>
-        <button onClick={() => setSearch(true)}>
-          📍 Confirm your farm location <span>Change location</span>
-        </button>
-      </section>
+      <SmartAdvisories language={language} />
     </section>
   );
 }

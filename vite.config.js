@@ -9,6 +9,14 @@ export default defineConfig({
         target: 'http://localhost:5000',
         changeOrigin: true,
       },
+      '/api/aviation': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+      '/api/marine': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
       '/api/search-city': {
         target: 'http://localhost:3001',
         changeOrigin: true,

@@ -1,0 +1,260 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+.landing-page {
+  /* Crisp, professional sky blue - applied to entire page */
+  background: linear-gradient(180deg, #7dd3fc 0%, #bae6fd 50%, #e0f2fe 100%);
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow: hidden;
+}
+
+.landing-page.fade-out .landing-content {
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+/* Full Page Floating Clouds */
+.full-page-clouds {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.fp-cloud {
+  position: absolute;
+  opacity: 0.1;
+  filter: blur(12px); /* Makes it look like realistic fog/clouds */
+  transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 1.5s ease;
+}
+
+/* Base drifting animation */
+.fp-cloud-1 {
+  top: -10vh;
+  left: -20vw;
+  animation: driftCloud 40s linear infinite alternate;
+}
+
+.fp-cloud-2 {
+  top: 40vh;
+  left: 50vw;
+  animation: driftCloud 60s linear infinite alternate-reverse;
+}
+
+.fp-cloud-3 {
+  bottom: 10vh;
+  left: 10vw;
+  animation: driftCloud 45s linear infinite alternate;
+}
+
+.fp-cloud-4 {
+  top: 10vh;
+  right: -10vw;
+  animation: driftCloud 55s linear infinite alternate-reverse;
+}
+
+@keyframes driftCloud {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(15vw, 5vh); }
+}
+
+/* Scatter transition when clicked */
+.full-page-clouds.scatter .fp-cloud-1 {
+  transform: translate(-100vw, -20vh) !important;
+  opacity: 0;
+}
+.full-page-clouds.scatter .fp-cloud-2 {
+  transform: translate(100vw, 20vh) !important;
+  opacity: 0;
+}
+.full-page-clouds.scatter .fp-cloud-3 {
+  transform: translate(-100vw, 20vh) !important;
+  opacity: 0;
+}
+.full-page-clouds.scatter .fp-cloud-4 {
+  transform: translate(100vw, -20vh) !important;
+  opacity: 0;
+}
+
+.landing-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: -15vh;
+}
+
+.landing-title {
+  font-size: 5.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -2px;
+  line-height: 1.1;
+}
+
+.landing-subtitle {
+  font-size: 1.25rem;
+  color: #475569;
+  font-weight: 300;
+  margin-top: 1rem;
+  letter-spacing: 0.5px;
+}
+
+/* Centerpiece */
+.centerpiece-container {
+  position: relative;
+  width: 300px;
+  height: 250px;
+  margin-top: 60px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+/* The Sun Orb */
+.sun-orb-wrapper {
+  position: absolute;
+  top: 40px; 
+  left: 170px; /* Top right corner of the cloud */
+  transition: all 2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1;
+}
+
+.sun-orb-wrapper.rising {
+  top: -100px;
+  left: 80px; /* Dead center */
+  transform: scale(3);
+}
+
+.sun-orb {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ffffff 0%, #fdf08b 20%, #facc15 60%, #eab308 100%);
+  box-shadow: 
+    0 0 40px rgba(250, 204, 21, 0.4), 
+    0 0 100px rgba(250, 204, 21, 0.2),
+    inset -10px -10px 20px rgba(234, 179, 8, 0.5);
+  animation: sunGlow 4s infinite alternate;
+}
+
+@keyframes sunGlow {
+  0% { box-shadow: 0 0 40px rgba(250, 204, 21, 0.4), 0 0 100px rgba(250, 204, 21, 0.2), inset -10px -10px 20px rgba(234, 179, 8, 0.5); }
+  100% { box-shadow: 0 0 60px rgba(250, 204, 21, 0.6), 0 0 140px rgba(250, 204, 21, 0.4), inset -10px -10px 20px rgba(234, 179, 8, 0.5); }
+}
+
+/* Realistic Volumetric Cloud */
+.volumetric-cloud {
+  position: absolute;
+  top: 130px;
+  width: 280px;
+  height: 120px;
+  z-index: 2;
+  filter: drop-shadow(0 20px 25px rgba(0,0,0,0.05));
+  animation: floatCloud 6s ease-in-out infinite;
+  transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 1.5s ease;
+}
+
+.volumetric-cloud.fade-away {
+  transform: translateY(100px) scale(0.8);
+  opacity: 0;
+}
+
+@keyframes floatCloud {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.cloud-blob {
+  position: absolute;
+  background: radial-gradient(circle at 50% 10%, #ffffff 0%, #f8fafc 80%, #f1f5f9 100%);
+  border-radius: 50%;
+  box-shadow: inset -5px -5px 15px rgba(0,0,0,0.03);
+}
+
+.blob-1 {
+  width: 120px;
+  height: 120px;
+  bottom: 0;
+  left: 20px;
+}
+
+.blob-2 {
+  width: 160px;
+  height: 160px;
+  bottom: 10px;
+  left: 70px;
+}
+
+.blob-3 {
+  width: 100px;
+  height: 100px;
+  bottom: 0;
+  right: 20px;
+}
+
+.blob-4 {
+  width: 140px;
+  height: 60px;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 30px;
+}
+
+/* Epic Sunrise Overlay - Smoother & More Elegant Bloom */
+.sun-glow-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200vw;
+  height: 200vw;
+  background: radial-gradient(circle, rgba(255,253,230,1) 0%, rgba(255,255,255,1) 25%, rgba(255,255,255,0) 70%);
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 998;
+  transition: transform 2.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 2s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.sun-glow-overlay.active {
+  transform: translate(-50%, -50%) scale(1.5);
+  opacity: 1;
+}
+
+/* Absolute whiteout background for the final transition phase */
+.landing-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #ffffff;
+  opacity: 0;
+  z-index: 997;
+  pointer-events: none;
+  transition: opacity 1.5s ease-in-out;
+}
+
+.landing-page.fade-out::before {
+  opacity: 1;
+}

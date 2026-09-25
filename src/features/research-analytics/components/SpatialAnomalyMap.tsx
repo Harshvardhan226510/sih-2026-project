@@ -50,24 +50,24 @@ export const SpatialAnomalyMap: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'EXTREME': return 'bg-rose-500 text-white border-rose-400 ring-rose-500/30';
-      case 'HIGH': return 'bg-amber-500 text-white border-amber-400 ring-amber-500/30';
-      case 'ABOVE': return 'bg-emerald-500 text-white border-emerald-400 ring-emerald-500/30';
-      case 'DEFICIT': return 'bg-cyan-500 text-white border-cyan-400 ring-cyan-500/30';
-      default: return 'bg-blue-600 text-white border-blue-400 ring-blue-500/30';
+      case 'EXTREME': return 'bg-rose-500 text-slate-800 border-rose-400 ring-rose-500/30';
+      case 'HIGH': return 'bg-amber-500 text-slate-800 border-amber-400 ring-amber-500/30';
+      case 'ABOVE': return 'bg-emerald-500 text-slate-800 border-emerald-400 ring-emerald-500/30';
+      case 'DEFICIT': return 'bg-cyan-500 text-slate-800 border-cyan-400 ring-cyan-500/30';
+      default: return 'bg-blue-600 text-slate-800 border-blue-400 ring-blue-500/30';
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Map Filter & Controls Bar */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-semibold text-white flex items-center gap-2">
+          <h3 className="text-base font-semibold text-slate-800 flex items-center gap-2">
             <Globe className="w-4 h-4 text-blue-400" />
             Regional Climatological & Anomaly Spatial Distribution
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Spatial distribution across Indian meteorological zones with IMD reference baselines
           </p>
         </div>
@@ -75,11 +75,11 @@ export const SpatialAnomalyMap: React.FC = () => {
         <div className="flex flex-wrap items-center gap-3">
           {/* Metric Selector */}
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400 font-semibold uppercase">Variable:</span>
+            <span className="text-xs text-slate-500 font-semibold uppercase">Variable:</span>
             <select
               value={metric}
               onChange={(e) => setMetric(e.target.value as WeatherMetric)}
-              className="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-500"
+              className="bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-500"
             >
               <option value="rainfall">Rainfall (mm)</option>
               <option value="temperature">Temperature (°C)</option>
@@ -87,11 +87,11 @@ export const SpatialAnomalyMap: React.FC = () => {
           </div>
 
           {/* Map Layer Mode */}
-          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5 text-xs">
+          <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 text-xs">
             <button
               onClick={() => setMapMode('anomaly')}
               className={`px-2.5 py-1 rounded-md transition-colors ${
-                mapMode === 'anomaly' ? 'bg-blue-600 text-white font-medium' : 'text-slate-400 hover:text-slate-200'
+                mapMode === 'anomaly' ? 'bg-blue-600 text-slate-800 font-medium' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
               Anomaly %
@@ -99,7 +99,7 @@ export const SpatialAnomalyMap: React.FC = () => {
             <button
               onClick={() => setMapMode('observed')}
               className={`px-2.5 py-1 rounded-md transition-colors ${
-                mapMode === 'observed' ? 'bg-blue-600 text-white font-medium' : 'text-slate-400 hover:text-slate-200'
+                mapMode === 'observed' ? 'bg-blue-600 text-slate-800 font-medium' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
               Observed ({unit})
@@ -107,7 +107,7 @@ export const SpatialAnomalyMap: React.FC = () => {
             <button
               onClick={() => setMapMode('extremes')}
               className={`px-2.5 py-1 rounded-md transition-colors ${
-                mapMode === 'extremes' ? 'bg-blue-600 text-white font-medium' : 'text-slate-400 hover:text-slate-200'
+                mapMode === 'extremes' ? 'bg-blue-600 text-slate-800 font-medium' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
               Extreme Events
@@ -119,12 +119,12 @@ export const SpatialAnomalyMap: React.FC = () => {
       {/* Interactive Spatial Grid & Detail Inspector */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Regional Weather Spatial Board */}
-        <div className="lg:col-span-2 bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-sm">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
-            <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200/80">
+            <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
               Indian Regional Meteorological Grid
             </span>
-            <div className="flex items-center gap-3 text-[11px] text-slate-400">
+            <div className="flex items-center gap-3 text-[11px] text-slate-500">
               <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-rose-500" /> &gt;+50% Extreme</span>
               <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> +25% High</span>
               <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Normal</span>
@@ -141,31 +141,31 @@ export const SpatialAnomalyMap: React.FC = () => {
                   onClick={() => setSelectedPoint(pt)}
                   className={`p-3.5 rounded-xl border transition-all cursor-pointer relative ${
                     isSelected
-                      ? 'bg-slate-800/90 border-blue-500 shadow-md ring-1 ring-blue-500/50'
-                      : 'bg-slate-950/60 border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/50'
+                      ? 'bg-slate-100 border-blue-500 shadow-md ring-1 ring-blue-500/50'
+                      : 'bg-white/60 border-slate-200/80 hover:border-slate-200 hover:bg-white/50'
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <div className="font-semibold text-slate-200 text-sm flex items-center gap-1">
+                      <div className="font-semibold text-slate-800 text-sm flex items-center gap-1">
                         <MapPin className="w-3.5 h-3.5 text-blue-400" />
                         {pt.name}
                       </div>
-                      <div className="text-[11px] text-slate-400">{pt.state}</div>
+                      <div className="text-[11px] text-slate-500">{pt.state}</div>
                     </div>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${getStatusColor(pt.status)}`}>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${getStatusColor(pt.status)}`}>
                       {pt.anomalyPercent > 0 ? `+${pt.anomalyPercent}%` : `${pt.anomalyPercent}%`}
                     </span>
                   </div>
 
-                  <div className="mt-3 grid grid-cols-2 gap-2 text-xs font-mono">
+                  <div className="mt-3 grid grid-cols-2 gap-2 text-xs ">
                     <div>
                       <div className="text-[10px] text-slate-500 font-sans">OBSERVED</div>
-                      <div className="font-bold text-slate-200">{pt.observed} {unit}</div>
+                      <div className="font-bold text-slate-800">{pt.observed} {unit}</div>
                     </div>
                     <div>
                       <div className="text-[10px] text-slate-500 font-sans">BASELINE</div>
-                      <div className="font-bold text-slate-400">{pt.baseline} {unit}</div>
+                      <div className="font-bold text-slate-500">{pt.baseline} {unit}</div>
                     </div>
                   </div>
                 </div>
@@ -176,41 +176,41 @@ export const SpatialAnomalyMap: React.FC = () => {
 
         {/* Right 1 Col: Drill-down Inspector Card */}
         {selectedPoint && (
-          <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-sm flex flex-col justify-between">
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
-                <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200/80">
+                <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-blue-400" />
                   {selectedPoint.name} Regional Profile
                 </h3>
-                <span className="text-xs font-mono text-slate-400">
+                <span className="text-xs text-slate-500">
                   {selectedPoint.lat}° N, {selectedPoint.lon}° E
                 </span>
               </div>
 
               <div className="mt-4 space-y-3 text-xs">
-                <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                  <div className="text-slate-400 font-medium">Climatological Anomaly</div>
-                  <div className="text-xl font-bold font-mono text-amber-400 mt-1">
+                <div className="bg-white p-3 rounded-lg border border-slate-200">
+                  <div className="text-slate-500 font-medium">Climatological Anomaly</div>
+                  <div className="text-xl font-bold text-amber-400 mt-1">
                     {selectedPoint.anomalyPercent > 0 ? `+${selectedPoint.anomalyPercent}%` : `${selectedPoint.anomalyPercent}%`}
                   </div>
-                  <div className="text-[11px] text-slate-400 mt-0.5">
+                  <div className="text-[11px] text-slate-500 mt-0.5">
                     Departure: {Number((selectedPoint.observed - selectedPoint.baseline).toFixed(1))} {unit} from normal
                   </div>
                 </div>
 
-                <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                  <div className="text-slate-400 font-medium">Extreme Weather Events</div>
-                  <div className="text-xl font-bold font-mono text-rose-400 mt-1">
+                <div className="bg-white p-3 rounded-lg border border-slate-200">
+                  <div className="text-slate-500 font-medium">Extreme Weather Events</div>
+                  <div className="text-xl font-bold text-rose-400 mt-1">
                     {selectedPoint.extremeEvents} Events
                   </div>
-                  <div className="text-[11px] text-slate-400 mt-0.5">
+                  <div className="text-[11px] text-slate-500 mt-0.5">
                     Surpasses 95th climatological percentile threshold
                   </div>
                 </div>
 
-                <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-[11px] leading-relaxed text-slate-300">
-                  <div className="font-semibold text-slate-200 mb-1 flex items-center gap-1">
+                <div className="bg-white p-3 rounded-lg border border-slate-200 text-[11px] leading-relaxed text-slate-700">
+                  <div className="font-semibold text-slate-800 mb-1 flex items-center gap-1">
                     <Info className="w-3.5 h-3.5 text-blue-400" />
                     Spatial Context
                   </div>
@@ -219,7 +219,7 @@ export const SpatialAnomalyMap: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-slate-800 text-[11px] text-slate-500 font-mono">
+            <div className="mt-4 pt-3 border-t border-slate-200 text-[11px] text-slate-500 ">
               Source: Open-Meteo ERA5 Reanalysis Grid / IMD Normal
             </div>
           </div>

@@ -143,6 +143,7 @@ create policy "public read" on alerts for select using (true);
 create policy "public read" on crop_stage_rules for select using (true);
 
 create policy "public insert" on chat_logs for insert with check (true);
+create policy "public delete" on chat_logs for delete using (true);
 create policy "public insert" on observations for insert with check (true);
 create policy "public insert" on forecasts for insert with check (true);
 create policy "public insert" on alerts for insert with check (true);

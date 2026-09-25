@@ -86,58 +86,68 @@ export const WeatherStatsCard = () => {
   }
 
   return (
-    <div className="weather-stats-card">
-      <div className="stats-header">
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-md p-5 flex flex-col pointer-events-auto">
+      <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="location-title flex items-center gap-1.5">
-            <MapPin size={16} className="text-cyan-400" />
+          <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5 mb-1">
+            <MapPin size={16} className="text-blue-500" />
             {selectedLocation.name}
           </h3>
-          <p className="location-subtitle capitalize">{data.description} • {selectedLocation.region}</p>
+          <p className="text-xs text-slate-500 capitalize">{data.description} • {selectedLocation.region}</p>
         </div>
-        <div className="temp-display">
-          <span className="temp-val">{Math.round(data.temp)}°C</span>
-          <span className="feels-like">Feels {Math.round(data.feelsLike)}°C</span>
-        </div>
-      </div>
-
-      <div className="stats-grid">
-        <div className="stat-box">
-          <Wind size={16} className="text-sky-400" />
-          <div className="stat-info">
-            <span className="stat-label">Wind</span>
-            <span className="stat-value">{data.windSpeed} km/h</span>
-          </div>
-        </div>
-
-        <div className="stat-box">
-          <Droplets size={16} className="text-blue-400" />
-          <div className="stat-info">
-            <span className="stat-label">Humidity</span>
-            <span className="stat-value">{data.humidity}%</span>
-          </div>
-        </div>
-
-        <div className="stat-box">
-          <Gauge size={16} className="text-purple-400" />
-          <div className="stat-info">
-            <span className="stat-label">Pressure</span>
-            <span className="stat-value">{Math.round(data.pressure)} hPa</span>
-          </div>
-        </div>
-
-        <div className="stat-box">
-          <Sun size={16} className="text-amber-400" />
-          <div className="stat-info">
-            <span className="stat-label">Source</span>
-            <span className="stat-value text-amber-300">OpenWeather</span>
-          </div>
+        <div className="text-right">
+          <span className="block text-3xl font-black text-slate-800 tracking-tight leading-none mb-1">{Math.round(data.temp)}°C</span>
+          <span className="block text-[10px] text-slate-500 font-bold uppercase tracking-wider">Feels {Math.round(data.feelsLike)}°C</span>
         </div>
       </div>
 
-      <div className="range-strip">
-        <span>Today Range: <strong>{Math.round(data.tempMin)}°C</strong> – <strong>{Math.round(data.tempMax)}°C</strong></span>
-        <span className="text-cyan-300">OWM Live Feed</span>
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex items-center gap-3">
+          <div className="bg-blue-100 text-blue-600 p-1.5 rounded-lg">
+            <Wind size={16} />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Wind</span>
+            <span className="text-xs font-bold text-slate-700">{data.windSpeed} km/h</span>
+          </div>
+        </div>
+
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex items-center gap-3">
+          <div className="bg-cyan-100 text-cyan-600 p-1.5 rounded-lg">
+            <Droplets size={16} />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Humidity</span>
+            <span className="text-xs font-bold text-slate-700">{data.humidity}%</span>
+          </div>
+        </div>
+
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex items-center gap-3">
+          <div className="bg-purple-100 text-purple-600 p-1.5 rounded-lg">
+            <Gauge size={16} />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pressure</span>
+            <span className="text-xs font-bold text-slate-700">{Math.round(data.pressure)} hPa</span>
+          </div>
+        </div>
+
+        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex items-center gap-3">
+          <div className="bg-orange-100 text-orange-600 p-1.5 rounded-lg">
+            <Sun size={16} />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Source</span>
+            <span className="text-[10px] font-bold text-slate-700">OpenWeather</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between pt-3 border-t border-slate-100 mt-auto">
+        <span className="text-[10px] text-slate-500">
+          Today Range: <strong className="text-slate-700">{Math.round(data.tempMin)}°C</strong> – <strong className="text-slate-700">{Math.round(data.tempMax)}°C</strong>
+        </span>
+        <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded">OWM Live Feed</span>
       </div>
     </div>
   );

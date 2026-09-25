@@ -30,7 +30,6 @@ import { ExtremeEvents } from './components/ExtremeEvents.js';
 import { EventReplay } from './components/EventReplay.js';
 import { ClimateFingerprint } from './components/ClimateFingerprint.js';
 import { ForecastAccuracy } from './components/ForecastAccuracy.js';
-import { ResearchQuery } from './components/ResearchQuery.js';
 
 import { 
   CloudSun, 
@@ -57,7 +56,7 @@ export const ResearchDashboard: React.FC = () => {
   const [metric, setMetric] = useState<WeatherMetric>('rainfall');
   const [aggregation, setAggregation] = useState<AggregationPeriod>('monthly');
   const [startDate, setStartDate] = useState<string>('2015-01-01');
-  const [endDate, setEndDate] = useState<string>('2024-12-31');
+  const [endDate, setEndDate] = useState<string>('2026-12-31');
 
   // Analytical Data States
   const [historicalData, setHistoricalData] = useState<HistoricalAnalyticsResponse | null>(null);
@@ -70,18 +69,21 @@ export const ResearchDashboard: React.FC = () => {
 
   const [loading, setLoading] = useState<boolean>(true);
 
+  const locName = typeof location === 'string' ? location : location.name;
+  const locBName = typeof locationB === 'string' ? locationB : locationB.name;
+
   useEffect(() => {
     let mounted = true;
     setLoading(true);
 
     Promise.all([
-      fetchHistoricalData(location, startDate, endDate, metric, aggregation),
-      fetchTrendData(location, startDate, endDate, metric),
-      fetchAnomalyData(location, startDate, endDate, metric),
-      fetchComparisonData(location, locationB, startDate, endDate, metric),
-      fetchExtremeEvents(location, startDate, endDate),
-      fetchClimateFingerprint(location),
-      fetchForecastAccuracy(location, metric === 'temperature' ? 'temperature' : 'temperature', 14)
+      fetchHistoricalData(locName, startDate, endDate, metric, aggregation),
+      fetchTrendData(locName, startDate, endDate, metric),
+      fetchAnomalyData(locName, startDate, endDate, metric),
+      fetchComparisonData(locName, locBName, startDate, endDate, metric),
+      fetchExtremeEvents(locName, startDate, endDate),
+      fetchClimateFingerprint(locName),
+      fetchForecastAccuracy(locName, metric === 'temperature' ? 'temperature' : 'temperature', 14)
     ])
       .then(([hist, trend, anom, comp, ext, clim, fc]) => {
         if (mounted) {
@@ -113,47 +115,18 @@ export const ResearchDashboard: React.FC = () => {
     { id: 'extremes', label: 'Extreme Events', icon: AlertTriangle },
     { id: 'replay', label: 'Event Replay', icon: RotateCcw },
     { id: 'fingerprint', label: 'Climate Fingerprint', icon: Compass },
-    { id: 'forecast', label: 'Forecast Accuracy', icon: Target },
-    { id: 'query', label: 'Research Query', icon: Search }
+    { id: 'forecast', label: 'Forecast Accuracy', icon: Target }
   ];
 
   return (
-    <div className="h-full bg-slate-950 text-slate-100 flex flex-col font-sans overflow-hidden">
-      {/* Top Government/Scientific Header */}
-      <header className="bg-slate-900 border-b border-slate-800 flex-shrink-0 z-10 backdrop-blur-md">
-        <div className="w-full px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3 truncate">
-            <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 flex-shrink-0">
-              <CloudSun className="w-6 h-6" />
-            </div>
-            <div className="truncate">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-base sm:text-lg tracking-tight text-white truncate">WeatherGPT</span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800 hidden lg:inline-block truncate">
-                  Research & Analytics
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 hidden xl:block truncate">
-                Smart India Hackathon • Climate Analytics
-              </p>
-            </div>
-          </div>
+    <div className="h-full bg-slate-50 text-slate-900 flex flex-col font-sans overflow-hidden">
 
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <div className="hidden lg:flex items-center gap-2 text-xs text-slate-400 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>ERA5 / IMD</span>
-            </div>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-800">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="hidden sm:inline">API Connected</span>
-            </span>
-          </div>
-        </div>
-
-        {/* Horizontal Tab Navigation Bar */}
-        <div className="w-full px-4 overflow-x-auto border-t border-slate-800/80 scrollbar-none">
-          <nav className="flex space-x-1 py-2">
+      {/* Main Container with Sidebar and Content */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* LEFT SIDEBAR */}
+        <aside className="w-64 bg-white border-r border-slate-200 flex-col hidden md:flex shrink-0 shadow-sm overflow-y-auto overflow-x-hidden">
+          <div className="p-4 space-y-1">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 pb-2 pt-2">Analysis Modules</div>
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -161,23 +134,22 @@ export const ResearchDashboard: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap flex items-center gap-1.5 transition-all ${
+                  className={`w-full px-3 py-2.5 rounded-xl text-sm font-medium flex items-center gap-3 transition-all ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-sm font-semibold'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 font-semibold'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{item.label}</span>
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{item.label}</span>
                 </button>
               );
             })}
-          </nav>
-        </div>
-      </header>
+          </div>
+        </aside>
 
-      {/* Main Content Workspace */}
-      <main className="flex-1 w-full overflow-y-auto px-4 py-6 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-900">
+        {/* Main Content Workspace */}
+        <main className="flex-1 overflow-y-auto px-4 py-6 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
         {activeTab === 'overview' && (
           <ResearchOverview
             historicalData={historicalData}
@@ -185,7 +157,7 @@ export const ResearchDashboard: React.FC = () => {
             anomalyData={anomalyData}
             extremeData={extremeData}
             climateData={climateData}
-            location={location}
+            location={locName}
             metric={metric}
             onNavigateTab={(tab) => setActiveTab(tab)}
           />
@@ -195,12 +167,12 @@ export const ResearchDashboard: React.FC = () => {
           <HistoricalExplorer
             data={historicalData}
             loading={loading}
-            selectedLocation={location}
+            selectedLocation={locName}
             startDate={startDate}
             endDate={endDate}
             selectedMetric={metric}
             selectedAggregation={aggregation}
-            onLocationChange={setLocation}
+            onLocationChange={(loc) => setLocation(loc)}
             onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
             onMetricChange={setMetric}
             onAggregationChange={setAggregation}
@@ -231,11 +203,9 @@ export const ResearchDashboard: React.FC = () => {
           <LocationComparison
             comparisonData={comparisonData}
             loading={loading}
-            locationA={location}
-            locationB={locationB}
+            startDate={startDate}
+            endDate={endDate}
             selectedMetric={metric}
-            onLocationAChange={setLocation}
-            onLocationBChange={setLocationB}
           />
         )}
 
@@ -263,17 +233,14 @@ export const ResearchDashboard: React.FC = () => {
             loading={loading}
           />
         )}
-
-        {activeTab === 'query' && (
-          <ResearchQuery />
-        )}
       </main>
+      </div>
 
       {/* Scientific Footer */}
-      <footer className="bg-slate-900 border-t border-slate-800 text-xs text-slate-400 py-4 mt-auto flex-shrink-0">
+      <footer className="bg-white border-t border-slate-200 text-xs text-slate-500 py-4 mt-auto flex-shrink-0 z-10 relative">
         <div className="w-full px-4 flex flex-col xl:flex-row items-center justify-between gap-2">
-          <div className="truncate">
-            WeatherGPT SIH Research & Analytics • Numerical Weather Intelligence Engine
+          <div className="truncate font-medium text-slate-700">
+            SIH Research & Analytics • Numerical Weather Intelligence Engine
           </div>
           <div className="flex items-center gap-4 text-[11px] truncate">
             <span>ERA5 Reanalysis (0.1°)</span>

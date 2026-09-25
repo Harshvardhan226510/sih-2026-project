@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { Crop, Lock, X, MapPin, Layers, Sparkles, Check } from 'lucide-react';
+import html2canvas from 'html2canvas';
 import { useWeather } from '../../../context/WeatherContext';
 
 export const MapCropTool = ({ map, onNavigateToChatbot, activeLayers }) => {
@@ -64,7 +65,7 @@ export const MapCropTool = ({ map, onNavigateToChatbot, activeLayers }) => {
     };
   }, [isCropping, map]);
 
-  const handleLockAndSend = () => {
+  const handleLockAndSend = async () => {
     if (!cropBounds) return;
 
     const sw = cropBounds.getSouthWest();
@@ -100,6 +101,22 @@ export const MapCropTool = ({ map, onNavigateToChatbot, activeLayers }) => {
         }
       });
 
+    let imageData = null;
+    try {
+      const mapContainer = document.querySelector('.leaflet-container');
+      if (mapContainer) {
+        const canvas = await html2canvas(mapContainer, { useCORS: true, allowTaint: true });
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        imageData = {
+          base64: dataUrl.split(',')[1],
+          mimeType: 'image/jpeg',
+          name: 'cropped-region.jpg'
+        };
+      }
+    } catch (err) {
+      console.warn("Failed to capture map image:", err);
+    }
+
     const spatialContextPayload = {
       timestamp: new Date().toLocaleTimeString(),
       center: { lat: center.lat.toFixed(3), lon: center.lng.toFixed(3) },
@@ -110,7 +127,8 @@ export const MapCropTool = ({ map, onNavigateToChatbot, activeLayers }) => {
       activeLayers: enabledLayerNames,
       alertsCount: alertsInZone.length,
       alertsSummary: alertsInZone.map((a) => `${a.severity}: ${a.title} (${a.region})`).join(' | '),
-      suggestedPrompt: `Analyze weather patterns, thermal anomalies, and disaster risk in locked map region (${center.lat.toFixed(2)}°N, ${center.lng.toFixed(2)}°E)`
+      suggestedPrompt: `Analyze weather patterns, thermal anomalies, and disaster risk in locked map region (${center.lat.toFixed(2)}°N, ${center.lng.toFixed(2)}°E)`,
+      fileData: imageData
     };
 
     setCroppedSpatialContext(spatialContextPayload);
@@ -122,7 +140,7 @@ export const MapCropTool = ({ map, onNavigateToChatbot, activeLayers }) => {
   };
 
   return (
-    <div className="map-crop-tool-wrapper">
+    <div className="map-crop-tool-wrapper" style={{ top: '340px', bottom: 'auto', right: '24px' }}>
       {!isCropping ? (
         <button
           className="crop-action-btn crop-start"

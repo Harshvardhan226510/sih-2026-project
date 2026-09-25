@@ -85,7 +85,7 @@ export const useChat = () => {
     if (!text.trim() && !fileData) return;
     setIsLoading(true);
 
-    const userMsg = { role: 'user', content: text, timestamp: new Date() };
+    const userMsg = { role: 'user', content: text, timestamp: new Date(), attachedFileData: fileData };
     const updatedMessages = [...messages, userMsg];
     
     if (currentSessionId) {

@@ -86,6 +86,8 @@ export function healthCheck(req, res) {
     status: 'ok',
     uptime: process.uptime(),
     revision: repo.getCurrentRevision(),
+    database: { status: 'ok', type: 'sqlite' },
+    ingestion: { enabled: (await import('../config/index.js')).default.ingestion.enabled },
     imd: {
       status: imdHealthy ? 'healthy' : (imdStatus ? 'degraded' : 'unknown'),
       lastSuccessAt: imdStatus?.last_success_at || null,

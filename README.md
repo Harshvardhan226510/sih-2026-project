@@ -117,15 +117,24 @@ npm run dev
 
 The server initializes the database, runs initial ingestion from the real IMD feed, and starts the cron scheduler.
 
-### Start Frontend
+### Local Development Commands
 
+The project provides two primary ways to run the application locally depending on your needs.
+
+#### 1. Shared Backend Mode (Recommended for Frontend Devs)
 ```bash
+# Requires VITE_ALERTS_API_URL to be set in .env pointing to the deployed backend
 npm run dev
 ```
+Starts ONLY the Vite frontend. Alerts are fetched from the shared authoritative API, meaning you see the exact same alerts as production and other developers. Ingestion is handled by the shared server.
 
-Open `http://localhost:5173/alerts`
+#### 2. Full Local Stack Mode (Recommended for Backend Devs)
+```bash
+npm run dev:all
+```
+Starts Vite AND all local backend services concurrently (Alerts, Farmer, Research). The Alerts backend runs locally on port 3000 using a local SQLite database. If `ENABLE_INGESTION=true`, your laptop will independently fetch alerts from IMD.
 
-The Vite dev server proxies `/api` requests to the backend at `localhost:3001`.
+Open `http://localhost:5173/` in your browser.
 
 ## API Endpoints
 

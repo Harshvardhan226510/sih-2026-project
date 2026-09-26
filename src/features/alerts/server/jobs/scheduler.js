@@ -21,14 +21,18 @@ export function startScheduler() {
   // Start MQTT client (server-side only; no-op if MQTT_ENABLED=false)
   mqttService.connect();
 
-  const cronExpr = config.ingestion.cron;
-  logger.info({ cron: cronExpr }, 'starting ingestion scheduler');
+  if (config.ingestion.enabled) {
+    const cronExpr = config.ingestion.cron;
+    logger.info({ cron: cronExpr }, 'starting ingestion scheduler');
 
-  // Run immediately on startup, then on schedule
-  runIngestion();
-  task = cron.schedule(cronExpr, () => {
+    // Run immediately on startup, then on schedule
     runIngestion();
-  });
+    task = cron.schedule(cronExpr, () => {
+      runIngestion();
+    });
+  } else {
+    logger.info('ingestion disabled via config');
+  }
 
   // Delivery queue processing + push retry (every 5 minutes)
   deliveryTask = cron.schedule('*/5 * * * *', () => {

@@ -53,17 +53,28 @@ export function AlertDashboard() {
   return (
     <div className="flex-1 w-full h-full min-h-0 bg-slate-50 flex flex-col font-sans text-slate-800">
 
-      {error && (
-        <div className="bg-red-50 text-red-600 px-4 py-2 flex items-center text-sm font-medium border-b border-red-200" role="alert">
-          <span className="mr-2">⚠️</span>
-          <span>Sync issue: {error}. Showing cached meteorological alerts.</span>
-        </div>
-      )}
+      {/* Sync Status Banner */}
+      <div className={`px-4 py-2 flex items-center text-sm font-medium border-b ${
+        !network.online ? 'bg-amber-50 text-amber-700 border-amber-200' :
+        error ? 'bg-red-50 text-red-600 border-red-200' :
+        syncStatus === 'syncing' ? 'bg-blue-50 text-blue-600 border-blue-200' :
+        'bg-green-50 text-green-700 border-green-200'
+      }`}>
+        <span className="mr-2">
+          {!network.online ? '📡' : error ? '⚠️' : syncStatus === 'syncing' ? '🔄' : '✅'}
+        </span>
+        <span>
+          {!network.online ? 'Offline - Showing cached alerts.' :
+           error ? `Sync issue: ${error}. Showing cached meteorological alerts.` :
+           syncStatus === 'syncing' ? 'Synchronizing with shared Alerts backend...' :
+           'Live / Synchronized with authoritative backend.'}
+        </span>
+      </div>
 
       {/* Full-width flex layout like GIS and Aviation modules */}
       <div className="flex-1 min-h-0 overflow-hidden flex">
         {/* LEFT SIDEBAR */}
-        <aside className="w-72 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col gap-0 overflow-y-auto">
+        <aside className="w-72 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col gap-0 overflow-y-auto justify-between">
           <div className="p-4 flex flex-col gap-4">
             <LocationSettings location={location} onSave={handleSaveLocation} />
             <AlertSearch query={query} setQuery={setQuery} />
@@ -73,6 +84,15 @@ export function AlertDashboard() {
               uniqueEvents={uniqueEvents}
               uniqueAreas={uniqueAreas}
             />
+          </div>
+          
+          {/* Debugging Information */}
+          <div className="p-4 bg-slate-100 border-t border-slate-200 text-xs text-slate-500 font-mono">
+            <div>API: {import.meta.env.VITE_ALERTS_API_URL || '/api'}</div>
+            <div>Sync: {syncStatus}</div>
+            <div>Last: {lastSync ? new Date(lastSync).toLocaleTimeString() : 'Never'}</div>
+            <div>Network: {network.online ? 'Online' : 'Offline'} ({network.quality})</div>
+            <div>Alerts: {alerts.length} local</div>
           </div>
         </aside>
 

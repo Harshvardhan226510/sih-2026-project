@@ -1,4 +1,4 @@
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_ALERTS_API_URL || '/api';
 const DEFAULT_TIMEOUT = 12000;
 async function request(path, opts = {}) {
   const { timeout = DEFAULT_TIMEOUT, headers = {}, ...rest } = opts;

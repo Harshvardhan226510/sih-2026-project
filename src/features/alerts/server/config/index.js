@@ -17,6 +17,7 @@ const config = {
     baseUrl: process.env.OPEN_METEO_BASE_URL || 'https://api.open-meteo.com/v1',
   },
   ingestion: {
+    enabled: process.env.ENABLE_INGESTION !== 'false',
     cron: process.env.INGESTION_CRON || '*/10 * * * *',
   },
   logLevel: process.env.LOG_LEVEL || 'info',
@@ -44,7 +45,14 @@ const config = {
     url:            process.env.SUPABASE_URL            || '',
     serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
   },
+  frontendUrl: process.env.FRONTEND_URL || '',
 };
+
+if (config.env === 'production') {
+  if (!config.frontendUrl) {
+    throw new Error('FRONTEND_URL must be set in production to configure CORS securely.');
+  }
+}
 
 if (!config.vapid.privateKey && config.env === 'production') {
   console.warn('[Security] VAPID_PRIVATE_KEY is missing in production!');

@@ -22,7 +22,13 @@ app.use(helmet({
   }
 }));
 
-app.use(cors());
+const corsOptions = {
+  origin: config.env === 'production' && config.frontendUrl 
+    ? config.frontendUrl 
+    : '*', // Allow all in development if no frontend URL specified
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 app.use(compression());
 app.use(express.json());
 

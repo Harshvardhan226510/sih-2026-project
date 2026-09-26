@@ -9,6 +9,7 @@ import { reverseGeocode } from '../services/location.js';
 import { WeatherProvider } from '../providers/base.js';
 import { getSupabaseClient } from '../db/supabaseClient.js';
 import logger from '../utils/logger.js';
+import { MOCK_ALERTS } from '../utils/mockAlerts.js';
 
 class MockCapProvider extends WeatherProvider {
   constructor(alerts) {
@@ -47,6 +48,13 @@ export async function listAlerts(req, res) {
       limit: Math.min(parseInt(limit) || 50, 100),
       updatedSince,
     });
+    // --- MOCK INJECTION FOR PROTOTYPE VIDEO ---
+    if (result.alerts.length === 0) {
+      result.alerts = [...MOCK_ALERTS];
+      result.total = MOCK_ALERTS.length;
+    }
+    // ------------------------------------------
+
     const etag = `"alerts-${result.total}-${result.page}"`;
     if (req.headers['if-none-match'] === etag) return res.status(304).end();
     res.set('ETag', etag);
@@ -93,6 +101,13 @@ export async function syncAlerts(req, res) {
       data.pendingDeliveries = pending;
     }
 
+    // --- MOCK INJECTION FOR PROTOTYPE VIDEO ---
+    if (data.alerts.length === 0) {
+      data.alerts = [...MOCK_ALERTS];
+      data.revision = (data.revision || 1) + 1000; 
+    }
+    // ------------------------------------------
+
     const etag = `"sync-${data.revision}"`;
     if (req.headers['if-none-match'] === etag) return res.status(304).end();
     res.set('ETag', etag);
@@ -105,6 +120,12 @@ export async function syncAlerts(req, res) {
 export async function bootstrapAlerts(req, res) {
   try {
     const data = await repo.getBootstrapData();
+    // --- MOCK INJECTION FOR PROTOTYPE VIDEO ---
+    if (data.alerts.length === 0) {
+      data.alerts = [...MOCK_ALERTS];
+      data.activeIds = MOCK_ALERTS.map(a => a.id);
+    }
+    // ------------------------------------------
     res.json(data);
   } catch (err) {
     handleConfigError(err, res);

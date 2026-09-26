@@ -31,7 +31,8 @@ let _initialized = false;
 export function getSupabaseClient() {
   if (_initialized && _client) return _client;
   
-  const { url, serviceRoleKey } = config.supabase;
+  const url = config.supabase.url || process.env.VITE_SUPABASE_URL;
+  const serviceRoleKey = config.supabase.serviceRoleKey || process.env.VITE_SUPABASE_ANON_KEY;
 
   if (!url || !serviceRoleKey) {
     const missing = [];

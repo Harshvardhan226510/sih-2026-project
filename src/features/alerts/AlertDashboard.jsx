@@ -12,7 +12,7 @@ import { getUserLocation, setUserLocation } from './services/alertDb.js';
 
 export function AlertDashboard() {
   const network = useNetwork();
-  const { alerts, summary, syncStatus, error } = useAlerts(network);
+  const { alerts, summary, syncStatus, lastSync, error } = useAlerts(network);
   const loading = syncStatus === 'syncing';
 
   const { filters, setFilters, filtered, uniqueEvents, uniqueAreas } = useFilters(alerts);

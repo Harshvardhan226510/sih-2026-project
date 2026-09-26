@@ -74,7 +74,7 @@ export function alertSummary(req, res) {
   res.set('ETag', etag);
   res.json(summary);
 }
-export function healthCheck(req, res) {
+export async function healthCheck(req, res) {
   const imdStatus = repo.getProviderStatus('imd');
   const activeCount = repo.getSummary().total;
   const allAlerts = repo.getAll({ limit: 1000 });

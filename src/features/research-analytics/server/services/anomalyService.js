@@ -81,10 +81,15 @@ export class AnomalyService {
             this.adapter.fetchHistoricalRecords(location, targetStartDate, targetEndDate)
         ]);
 
-        const baselineRecords = baseRes.records;
+        const baselineRecordsRaw = baseRes.records;
         const targetRecords = targetRes.records;
         const isSumMetric = metric === 'rainfall';
         const unit = this.getMetricUnit(metric);
+
+        // Feature 7: Calendar-Aware Baseline
+        // Filter baseline records so they only include the same calendar days (MM-DD) as the target period
+        const targetMMDDs = new Set(targetRecords.map(r => r.date.substring(5)));
+        const baselineRecords = baselineRecordsRaw.filter(r => targetMMDDs.has(r.date.substring(5)));
 
         // Group baseline records by day-of-year (MM-DD)
         const baselineDailyMap = new Map();
@@ -98,7 +103,7 @@ export class AnomalyService {
         const targetVals = targetRecords.map(r => this.extractMetricValue(r, metric));
 
         const observedValue = Number((isSumMetric ? sum(targetVals) : mean(targetVals)).toFixed(2));
-        const baselineDailyMean = mean(baselineAllVals);
+        const baselineDailyMean = baselineAllVals.length ? mean(baselineAllVals) : 0;
         const historicalBaseline = Number((isSumMetric ? (baselineDailyMean * targetRecords.length) : baselineDailyMean).toFixed(2));
 
         const anomaly = calculateAnomaly(observedValue, historicalBaseline);
@@ -201,7 +206,7 @@ export class AnomalyService {
             explanation,
             provenance: {
                 ...targetRes.provenance,
-                calculationMethod: `Climatological Baseline Normalization (${baseStart} to ${baseEnd}) & Deterministic Z-score / IQR Outlier Extraction`
+                calculationMethod: `Calendar-Aware Climatological Normalization (Matched to target MM-DD across ${baseStart} to ${baseEnd}) & Deterministic Z-score / IQR Outlier Extraction`
             }
         };
     }

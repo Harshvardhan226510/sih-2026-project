@@ -21,9 +21,12 @@ import {
   Database, 
   Activity, 
   Layers, 
-  HelpCircle 
+  HelpCircle,
+  FileText,
+  BarChart2
 } from 'lucide-react';
 import { DataProvenance } from './DataProvenance.js';
+import { RecentQueriesWidget } from './RecentQueriesWidget.js';
 
 export const ResearchQuery: React.FC = () => {
   const [query, setQuery] = useState<string>('Compare monsoon rainfall in Pune and Mumbai from 2015 to 2024.');
@@ -107,51 +110,83 @@ export const ResearchQuery: React.FC = () => {
         </div>
       </div>
 
+      {/* Recent Queries Widget */}
+      <RecentQueriesWidget onRestoreQuery={(q) => {
+        setQuery(q.title || 'Compare monsoon rainfall in Pune and Mumbai');
+        handleSearch(q.title || 'Compare monsoon rainfall in Pune and Mumbai');
+      }} />
+
       {/* Query Result View */}
       {result && (
         <div className="space-y-6">
-          {/* Parsed Intent Pedigree */}
+          {/* Research Question */}
+          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">Research Question</h3>
+            <div className="text-lg font-medium text-slate-900">"{result.query || query}"</div>
+          </div>
+
+          {/* Parsed Intent & Parameters */}
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-              Parsed Intent & Query Parameters
+            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+              <Layers className="w-3.5 h-3.5" />
+              Analysis Parameters & Intent
             </div>
             <div className="flex flex-wrap gap-2 text-xs ">
-              <span className="px-2.5 py-1 bg-white rounded border border-slate-200 text-blue-400">
+              <span className="px-2.5 py-1 bg-white rounded border border-slate-200 text-blue-500 font-medium">
                 Type: {result.parsedIntent.type}
               </span>
-              <span className="px-2.5 py-1 bg-white rounded border border-slate-200 text-emerald-400">
+              <span className="px-2.5 py-1 bg-white rounded border border-slate-200 text-emerald-500 font-medium">
                 Metric: {result.parsedIntent.metric}
               </span>
-              <span className="px-2.5 py-1 bg-white rounded border border-slate-200 text-amber-400">
+              <span className="px-2.5 py-1 bg-white rounded border border-slate-200 text-amber-500 font-medium">
                 Locations: {result.parsedIntent.locations.join(', ')}
               </span>
-              <span className="px-2.5 py-1 bg-white rounded border border-slate-200 text-purple-400">
+              <span className="px-2.5 py-1 bg-white rounded border border-slate-200 text-purple-500 font-medium">
                 Range: {result.parsedIntent.dateRange.start} → {result.parsedIntent.dateRange.end}
+              </span>
+              <span className="px-2.5 py-1 bg-white rounded border border-slate-200 text-slate-600 font-medium">
+                Aggregation: {result.parsedIntent.aggregation}
               </span>
             </div>
           </div>
 
-          {/* AI Evidence Synthesis & Key Insights */}
-          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 pb-3 border-b border-slate-200">
-              <Sparkles className="w-4 h-4 text-blue-400" />
-              <h3 className="text-sm font-semibold text-slate-800">Analytical Synthesis</h3>
+          {/* Key Findings & Statistical Evidence */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+              <div className="flex items-center gap-2 pb-3 border-b border-slate-200">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <h3 className="text-sm font-semibold text-slate-800">Key Finding</h3>
+              </div>
+              <div className="mt-4 space-y-2">
+                <ul className="space-y-2 text-sm text-slate-700 font-medium">
+                  {result.keyInsights.map((insight, idx) => (
+                    <li key={idx} className="flex items-start gap-2 leading-relaxed">
+                      <span className="text-emerald-500 shrink-0 mt-0.5">•</span>
+                      <span>{insight}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
 
-            <p className="mt-4 text-xs sm:text-sm text-slate-800 leading-relaxed bg-white/60 p-4 rounded-lg border border-slate-200">
-              {result.analyticalExplanation}
-            </p>
-
-            <div className="mt-4 space-y-2">
-              <div className="text-xs font-semibold text-slate-500 uppercase">Key Empirical Findings:</div>
-              <ul className="space-y-1.5 text-xs text-slate-700">
-                {result.keyInsights.map((insight, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                    <span>{insight}</span>
-                  </li>
-                ))}
-              </ul>
+            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+              <div className="flex items-center gap-2 pb-3 border-b border-slate-200">
+                <BarChart2 className="w-4 h-4 text-blue-500" />
+                <h3 className="text-sm font-semibold text-slate-800">Statistical Evidence</h3>
+              </div>
+              <div className="mt-4 space-y-2 text-xs text-slate-600">
+                {result.analyticsData?.summary && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-2 bg-slate-50 rounded">Mean: <span className="font-semibold text-slate-800">{result.analyticsData.summary.mean?.toFixed(2)}</span></div>
+                    <div className="p-2 bg-slate-50 rounded">Median: <span className="font-semibold text-slate-800">{result.analyticsData.summary.median?.toFixed(2)}</span></div>
+                    <div className="p-2 bg-slate-50 rounded">Max: <span className="font-semibold text-slate-800">{result.analyticsData.summary.max?.toFixed(2)}</span></div>
+                    <div className="p-2 bg-slate-50 rounded">Std Dev: <span className="font-semibold text-slate-800">{result.analyticsData.summary.stdDev?.toFixed(2)}</span></div>
+                  </div>
+                )}
+                {!result.analyticsData?.summary && (
+                  <div className="p-3 bg-slate-50 rounded text-slate-500 italic">Statistical summary details are embedded in the charts and key findings.</div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -199,7 +234,32 @@ export const ResearchQuery: React.FC = () => {
             </div>
           </div>
 
-          <DataProvenance provenance={result.provenance} />
+          {/* Analytical Interpretation */}
+          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+            <div className="flex items-center gap-2 pb-3 border-b border-slate-200">
+              <FileText className="w-4 h-4 text-blue-500" />
+              <h3 className="text-sm font-semibold text-slate-800">Analytical Interpretation</h3>
+            </div>
+            <p className="mt-4 text-sm text-slate-800 leading-relaxed bg-slate-50 p-4 rounded-lg border border-slate-100">
+              {result.analyticalExplanation}
+            </p>
+          </div>
+
+          {/* Methodology & Provenance */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+              <div className="flex items-center gap-2 pb-3 border-b border-slate-200">
+                <HelpCircle className="w-4 h-4 text-blue-500" />
+                <h3 className="text-sm font-semibold text-slate-800">Methodology</h3>
+              </div>
+              <div className="mt-4 text-xs text-slate-600 leading-relaxed">
+                {result.provenance.calculationMethod || 'Standard descriptive statistics and time-series aggregation.'}
+              </div>
+            </div>
+            <div>
+              <DataProvenance provenance={result.provenance} />
+            </div>
+          </div>
         </div>
       )}
     </div>

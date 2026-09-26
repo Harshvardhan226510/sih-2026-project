@@ -3,6 +3,7 @@ import { ClimateFingerprintResponse } from '../types/analytics.js';
 import { 
   ResponsiveContainer, 
   ComposedChart, 
+  BarChart,
   Bar, 
   Line, 
   XAxis, 
@@ -115,31 +116,61 @@ export const ClimateFingerprint: React.FC<Props> = ({ climateData, loading }) =>
         </div>
       </div>
 
-      {/* 12-Month Climatological Normal Chart */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-200/80">
-          <h3 className="text-base font-semibold text-slate-800 flex items-center gap-2">
-            <Compass className="w-4 h-4 text-blue-400" />
-            12-Month Climatological Normals (Rainfall & Temperature Envelope)
-          </h3>
+      {/* 12-Month Climatological Normal Chart & Seasonal Breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm lg:col-span-2">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200/80">
+            <h3 className="text-base font-semibold text-slate-800 flex items-center gap-2">
+              <Compass className="w-4 h-4 text-blue-400" />
+              12-Month Climatological Normals (Rainfall & Temperature Envelope)
+            </h3>
+          </div>
+
+          <div className="h-80 w-full mt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={climateData.monthlyNormals} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="month" stroke="#64748b" tick={{ fontSize: 11 }} />
+                <YAxis yAxisId="left" stroke="#3b82f6" tick={{ fontSize: 11 }} />
+                <YAxis yAxisId="right" orientation="right" stroke="#f59e0b" tick={{ fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#0b1329', borderColor: '#e2e8f0', borderRadius: '8px', fontSize: '12px' }}
+                />
+                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                <Bar yAxisId="left" dataKey="avgRainfall" fill="#3b82f6" name="Precipitation Normal (mm)" radius={[3, 3, 0, 0]} />
+                <Line yAxisId="right" type="monotone" dataKey="avgTemp" stroke="#f59e0b" strokeWidth={2.5} name="Temperature Normal (°C)" />
+                <Line yAxisId="left" type="monotone" dataKey="avgHumidity" stroke="#06b6d4" strokeWidth={1.5} strokeDasharray="3 3" name="Relative Humidity (%)" />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
-        <div className="h-80 w-full mt-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={climateData.monthlyNormals} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="month" stroke="#64748b" tick={{ fontSize: 11 }} />
-              <YAxis yAxisId="left" stroke="#3b82f6" tick={{ fontSize: 11 }} />
-              <YAxis yAxisId="right" orientation="right" stroke="#f59e0b" tick={{ fontSize: 11 }} />
-              <Tooltip
-                contentStyle={{ backgroundColor: '#0b1329', borderColor: '#e2e8f0', borderRadius: '8px', fontSize: '12px' }}
-              />
-              <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-              <Bar yAxisId="left" dataKey="avgRainfall" fill="#3b82f6" name="Precipitation Normal (mm)" radius={[3, 3, 0, 0]} />
-              <Line yAxisId="right" type="monotone" dataKey="avgTemp" stroke="#f59e0b" strokeWidth={2.5} name="Temperature Normal (°C)" />
-              <Line yAxisId="left" type="monotone" dataKey="avgHumidity" stroke="#06b6d4" strokeWidth={1.5} strokeDasharray="3 3" name="Relative Humidity (%)" />
-            </ComposedChart>
-          </ResponsiveContainer>
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200/80">
+            <h3 className="text-base font-semibold text-slate-800 flex items-center gap-2">
+              <CloudRain className="w-4 h-4 text-blue-400" />
+              Rainfall Distribution
+            </h3>
+          </div>
+          <div className="h-80 w-full mt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={[
+                { season: 'Winter', value: climateData.rainfallSeasonality.winterPct },
+                { season: 'Pre-Monsoon', value: climateData.rainfallSeasonality.summerPct },
+                { season: 'Monsoon', value: climateData.rainfallSeasonality.monsoonPct },
+                { season: 'Post-Monsoon', value: climateData.rainfallSeasonality.postMonsoonPct }
+              ]} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="season" stroke="#64748b" tick={{ fontSize: 11 }} />
+                <YAxis stroke="#64748b" tick={{ fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#0b1329', borderColor: '#e2e8f0', borderRadius: '8px', fontSize: '12px' }}
+                  formatter={(val: any) => [`${val}%`, 'Share']}
+                />
+                <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Percentage Share" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 

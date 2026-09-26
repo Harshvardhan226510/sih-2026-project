@@ -30,6 +30,8 @@ import { ExtremeEvents } from './components/ExtremeEvents.js';
 import { EventReplay } from './components/EventReplay.js';
 import { ClimateFingerprint } from './components/ClimateFingerprint.js';
 import { ForecastAccuracy } from './components/ForecastAccuracy.js';
+import { ResearchQuery } from './components/ResearchQuery.js';
+import { LocationSearch } from './components/LocationSearch.js';
 
 import { 
   CloudSun, 
@@ -56,7 +58,11 @@ export const ResearchDashboard: React.FC = () => {
   const [metric, setMetric] = useState<WeatherMetric>('rainfall');
   const [aggregation, setAggregation] = useState<AggregationPeriod>('monthly');
   const [startDate, setStartDate] = useState<string>('2015-01-01');
-  const [endDate, setEndDate] = useState<string>('2026-12-31');
+  const [endDate, setEndDate] = useState<string>(new Date().toISOString().split('T')[0]);
+
+  // Anomaly Baseline states
+  const [anomalyBaseStart, setAnomalyBaseStart] = useState<string>('1991-01-01');
+  const [anomalyBaseEnd, setAnomalyBaseEnd] = useState<string>('2020-12-31');
 
   // Analytical Data States
   const [historicalData, setHistoricalData] = useState<HistoricalAnalyticsResponse | null>(null);
@@ -79,7 +85,7 @@ export const ResearchDashboard: React.FC = () => {
     Promise.all([
       fetchHistoricalData(locName, startDate, endDate, metric, aggregation),
       fetchTrendData(locName, startDate, endDate, metric),
-      fetchAnomalyData(locName, startDate, endDate, metric),
+      fetchAnomalyData(locName, startDate, endDate, metric, anomalyBaseStart, anomalyBaseEnd),
       fetchComparisonData(locName, locBName, startDate, endDate, metric),
       fetchExtremeEvents(locName, startDate, endDate),
       fetchClimateFingerprint(locName),
@@ -103,9 +109,10 @@ export const ResearchDashboard: React.FC = () => {
       });
 
     return () => { mounted = false; };
-  }, [location, locationB, metric, aggregation, startDate, endDate]);
+  }, [location, locationB, metric, aggregation, startDate, endDate, anomalyBaseStart, anomalyBaseEnd]);
 
   const navItems = [
+    { id: 'query', label: 'Research Query', icon: Search },
     { id: 'overview', label: 'Overview', icon: Layers },
     { id: 'explorer', label: 'Historical Explorer', icon: Activity },
     { id: 'trends', label: 'Climate Trends', icon: TrendingUp },
@@ -149,7 +156,78 @@ export const ResearchDashboard: React.FC = () => {
         </aside>
 
         {/* Main Content Workspace */}
-        <main className="flex-1 overflow-y-auto px-4 py-6 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
+        <main className="flex-1 overflow-y-auto bg-slate-50 flex flex-col relative h-full w-full">
+          
+          {/* Global Research Control Bar */}
+          <div className="bg-white border-b border-slate-200 sticky top-0 z-10 p-4 shadow-sm flex-shrink-0">
+            <div className="flex flex-col md:flex-row gap-4 items-end">
+              <div className="flex-1 min-w-[250px]">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Target Location</label>
+                <LocationSearch
+                  selectedLocation={location}
+                  onLocationChange={(loc) => setLocation(loc.name)}
+                />
+              </div>
+              
+              <div className="w-full md:w-auto">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Primary Metric</label>
+                <select 
+                  value={metric} 
+                  onChange={(e) => setMetric(e.target.value as WeatherMetric)}
+                  className="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-3 py-2.5 focus:outline-none focus:border-blue-500"
+                >
+                  <option value="rainfall">Rainfall (mm)</option>
+                  <option value="temperature">Mean Temperature (°C)</option>
+                  <option value="temp_max">Max Temperature (°C)</option>
+                  <option value="temp_min">Min Temperature (°C)</option>
+                  <option value="humidity">Relative Humidity (%)</option>
+                  <option value="wind_speed">Wind Speed (km/h)</option>
+                </select>
+              </div>
+
+              <div className="w-full md:w-auto flex gap-2">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Start Date</label>
+                  <input 
+                    type="date" 
+                    value={startDate} 
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-3 py-2.5 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">End Date</label>
+                  <input 
+                    type="date" 
+                    value={endDate} 
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-3 py-2.5 focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="w-full md:w-auto">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Aggregation</label>
+                <select 
+                  value={aggregation} 
+                  onChange={(e) => setAggregation(e.target.value as AggregationPeriod)}
+                  className="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-3 py-2.5 focus:outline-none focus:border-blue-500"
+                >
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-4 py-6 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100">
+        
+        {activeTab === 'query' && (
+          <ResearchQuery />
+        )}
+
         {activeTab === 'overview' && (
           <ResearchOverview
             historicalData={historicalData}
@@ -192,6 +270,10 @@ export const ResearchDashboard: React.FC = () => {
             anomalyData={anomalyData}
             loading={loading}
             selectedMetric={metric}
+            onBaselineChange={(start, end) => {
+              setAnomalyBaseStart(start);
+              setAnomalyBaseEnd(end);
+            }}
           />
         )}
 
@@ -233,6 +315,7 @@ export const ResearchDashboard: React.FC = () => {
             loading={loading}
           />
         )}
+          </div>
       </main>
       </div>
 

@@ -90,94 +90,7 @@ export const HistoricalExplorer: React.FC<Props> = ({
 
   return (
     <div className="space-y-6">
-      {/* Control / Filter Bar */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          {/* Location Picker */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-              Target Location
-            </label>
-            <select
-              value={selectedLocation}
-              onChange={(e) => onLocationChange(e.target.value)}
-              className="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
-            >
-              <option value="Pune">Pune, Maharashtra</option>
-              <option value="Mumbai">Mumbai, Maharashtra</option>
-              <option value="Delhi">Delhi, NCR</option>
-              <option value="Bengaluru">Bengaluru, Karnataka</option>
-              <option value="Chennai">Chennai, Tamil Nadu</option>
-              <option value="Kolkata">Kolkata, West Bengal</option>
-              <option value="Hyderabad">Hyderabad, Telangana</option>
-              <option value="Ahmedabad">Ahmedabad, Gujarat</option>
-              <option value="Jaipur">Jaipur, Rajasthan</option>
-              <option value="Shimla">Shimla, Himachal Pradesh</option>
-              <option value="Kochi">Kochi, Kerala</option>
-            </select>
-          </div>
 
-          {/* Meteorological Parameter */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-              Meteorological Variable
-            </label>
-            <select
-              value={selectedMetric}
-              onChange={(e) => onMetricChange(e.target.value as WeatherMetric)}
-              className="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
-            >
-              <option value="rainfall">Precipitation / Rainfall (mm)</option>
-              <option value="temperature">Mean Air Temperature (°C)</option>
-              <option value="temp_max">Maximum Temperature (°C)</option>
-              <option value="temp_min">Minimum Temperature (°C)</option>
-              <option value="humidity">Relative Humidity (%)</option>
-              <option value="wind_speed">Wind Speed (km/h)</option>
-              <option value="pressure">Surface Pressure (hPa)</option>
-              <option value="cloud_cover">Cloud Cover (%)</option>
-            </select>
-          </div>
-
-          {/* Aggregation Interval */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-              Temporal Aggregation
-            </label>
-            <select
-              value={selectedAggregation}
-              onChange={(e) => onAggregationChange(e.target.value as AggregationPeriod)}
-              className="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
-            >
-              <option value="daily">Daily Aggregation</option>
-              <option value="weekly">Weekly Sum/Mean</option>
-              <option value="monthly">Monthly Sum/Mean</option>
-              <option value="yearly">Yearly Climatology</option>
-            </select>
-          </div>
-
-          {/* Date Range Inputs */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-              Date Range (Start → End)
-            </label>
-            <div className="flex items-center gap-1.5">
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => onDateChange(e.target.value, endDate)}
-                className="w-1/2 bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-500"
-              />
-              <span className="text-slate-500 text-xs">→</span>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => onDateChange(startDate, e.target.value)}
-                className="w-1/2 bg-white border border-slate-200 text-slate-800 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:border-blue-500"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Interactive Time Series Chart Card */}
       <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
@@ -257,7 +170,7 @@ export const HistoricalExplorer: React.FC<Props> = ({
                   <YAxis stroke="#64748b" tick={{ fontSize: 11 }} />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#0b1329', borderColor: '#e2e8f0', borderRadius: '8px', fontSize: '12px' }}
-                    formatter={(val: any, name: string) => [`${val} ${unit}`, name]}
+                    formatter={(val: any, name: any) => [`${val} ${unit}`, name]}
                   />
                   <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
                   <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} dot={false} name={`Observed (${unit})`} />

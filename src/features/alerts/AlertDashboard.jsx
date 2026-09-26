@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../shared/lib/supabaseClient.js';
+import { useAlerts } from './hooks/useAlerts.js';
 import { useNetwork } from './hooks/useNetwork.js';
 import { useFilters, useSearch } from './hooks/useSearch.js';
 import { AlertSummaryCards } from './components/AlertSummaryCards.jsx';
@@ -12,10 +12,8 @@ import { getUserLocation, setUserLocation } from './services/alertDb.js';
 
 export function AlertDashboard() {
   const network = useNetwork();
-  const [alerts, setAlerts] = useState([]);
-  const [summary, setSummary] = useState({ total: 0, extreme: 0, severe: 0, moderate: 0, minor: 0 });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { alerts, summary, syncStatus, error } = useAlerts(network);
+  const loading = syncStatus === 'syncing';
 
   const { filters, setFilters, filtered, uniqueEvents, uniqueAreas } = useFilters(alerts);
   const { query, setQuery, results } = useSearch(filtered);
@@ -42,50 +40,7 @@ export function AlertDashboard() {
     };
   }, []);
 
-  useEffect(() => {
-    async function fetchAlerts() {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('alerts')
-        .select('*')
-        .order('issued_at', { ascending: false });
 
-      if (error) {
-        console.error('Supabase fetch error:', error);
-        setError(error.message);
-      } else {
-        setAlerts(data || []);
-        computeSummary(data || []);
-      }
-      setLoading(false);
-    }
-    fetchAlerts();
-
-    // Supabase Realtime Subscription
-    const channel = supabase
-      .channel('public:alerts')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'alerts' }, (payload) => {
-        console.log('Real-time alert update:', payload);
-        fetchAlerts();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  function computeSummary(alertList) {
-    // Assuming active if status is not EXPIRED or if we just count all returned
-    const active = alertList.filter(a => a.status !== 'EXPIRED');
-    setSummary({
-      total: active.length,
-      extreme: active.filter(a => a.severity === 'Extreme').length,
-      severe: active.filter(a => a.severity === 'Severe').length,
-      moderate: active.filter(a => a.severity === 'Moderate').length,
-      minor: active.filter(a => a.severity === 'Minor').length,
-    });
-  }
 
   async function handleSaveLocation(newLocation) {
     await setUserLocation(newLocation.state, newLocation.district, newLocation);

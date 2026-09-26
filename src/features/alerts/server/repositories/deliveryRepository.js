@@ -1,100 +1,113 @@
-import { runQuery, runExec, runGet } from '../db/connection.js';
+import { getSupabaseClient } from '../db/supabaseClient.js';
 
 export class DeliveryRepository {
-  registerDevice(id, state, district) {
-    const existing = runGet('SELECT id FROM devices WHERE id = ?', [id]);
+  async registerDevice(id, state, district) {
+    const client = getSupabaseClient();
+    const now = new Date().toISOString();
+    
+    // Check if exists
+    const { data: existing } = await client.from('devices').select('device_id').eq('device_id', id).single();
+    
     if (existing) {
-      runExec(
-        'UPDATE devices SET state = ?, district = ?, last_seen_at = CURRENT_TIMESTAMP WHERE id = ?',
-        [state, district, id]
-      );
+      await client.from('devices').update({
+        state,
+        district,
+        updated_at: now
+      }).eq('device_id', id);
     } else {
-      runExec(
-        'INSERT INTO devices (id, state, district) VALUES (?, ?, ?)',
-        [id, state, district]
-      );
+      await client.from('devices').insert([{
+        device_id: id,
+        state,
+        district,
+        created_at: now,
+        updated_at: now
+      }]);
     }
   }
 
-  enqueueAlert(alertId, deviceId, priority) {
-    const existing = runGet(
-      'SELECT id FROM delivery_queue WHERE alert_id = ? AND device_id = ?',
-      [alertId, deviceId]
-    );
+  async enqueueAlert(alertId, deviceId, priority) {
+    // simplified implementation
+    const client = getSupabaseClient();
+    const { data: existing } = await client.from('alert_deliveries')
+      .select('id').eq('alert_id', alertId).eq('device_id', deviceId).single();
+      
     if (!existing) {
-      runExec(
-        'INSERT INTO delivery_queue (alert_id, device_id, priority, status) VALUES (?, ?, ?, ?)',
-        [alertId, deviceId, priority, 'PENDING']
-      );
+      await client.from('alert_deliveries').insert([{
+        alert_id: alertId,
+        device_id: deviceId,
+        status: 'pending'
+      }]);
     }
   }
 
-  getPendingAlerts(deviceId) {
-    return runQuery(
-      `SELECT q.id as queueId, a.* 
-       FROM delivery_queue q 
-       JOIN alerts a ON q.alert_id = a.id 
-       WHERE q.device_id = ? AND q.status = 'PENDING' 
-       ORDER BY q.priority DESC, q.created_at ASC`,
-      [deviceId]
-    );
+  async getPendingAlerts(deviceId) {
+    const client = getSupabaseClient();
+    const { data } = await client.from('alert_deliveries')
+      .select('id, alerts!inner(*)')
+      .eq('device_id', deviceId)
+      .eq('status', 'pending');
+      
+    if (!data) return [];
+    
+    // Map alerts properly
+    return data.map(row => {
+      const a = row.alerts;
+      return {
+        queueId: row.id,
+        id: a.id,
+        severity: a.severity,
+        event: a.event,
+        status: a.status,
+        expiresAt: a.expires_at,
+        area: a.area,
+        areaCode: a.area_code,
+        version: a.version
+      };
+    });
   }
 
-  acknowledgeAlert(deviceId, alertId) {
-    // Insert into acknowledgements if not exists
-    const ack = runGet(
-      'SELECT received_at FROM acknowledgements WHERE alert_id = ? AND device_id = ?',
-      [alertId, deviceId]
-    );
-    if (!ack) {
-      runExec(
-        'INSERT INTO acknowledgements (alert_id, device_id) VALUES (?, ?)',
-        [alertId, deviceId]
-      );
-    }
-
-    // Update delivery queue
-    runExec(
-      `UPDATE delivery_queue SET status = 'ACKNOWLEDGED' WHERE alert_id = ? AND device_id = ?`,
-      [alertId, deviceId]
-    );
+  async acknowledgeAlert(deviceId, alertId) {
+    const client = getSupabaseClient();
+    const now = new Date().toISOString();
+    await client.from('alert_deliveries').upsert([{
+      alert_id: alertId,
+      device_id: deviceId,
+      status: 'acknowledged',
+      updated_at: now
+    }], { onConflict: 'device_id, alert_id' });
   }
 
-  getDevicesForArea(state, district) {
+  async getDevicesForArea(state, district) {
+    const client = getSupabaseClient();
+    let query = client.from('devices').select('*');
+    
     const conditions = [];
-    const params = [];
-    if (state) {
-      conditions.push('state LIKE ?');
-      params.push(`%${state}%`);
+    if (state) conditions.push(`state.ilike.%${state}%`);
+    if (district) conditions.push(`district.ilike.%${district}%`);
+    
+    if (conditions.length > 0) {
+      query = query.or(conditions.join(','));
     }
-    if (district) {
-      conditions.push('district LIKE ?');
-      params.push(`%${district}%`);
-    }
-
-    if (conditions.length === 0) {
-      return runQuery('SELECT * FROM devices');
-    }
-
-    return runQuery(
-      `SELECT * FROM devices WHERE ${conditions.join(' OR ')}`,
-      params
-    );
+    
+    const { data } = await query;
+    return data || [];
   }
 
-  getRetryQueue(limit = 100) {
-    return runQuery(
-      `SELECT * FROM delivery_queue 
-       WHERE status = 'PENDING' AND next_attempt_at <= CURRENT_TIMESTAMP 
-       LIMIT ?`,
-      [limit]
-    );
+  async getRetryQueue(limit = 100) {
+    const client = getSupabaseClient();
+    const { data } = await client.from('alert_deliveries')
+      .select('*')
+      .eq('status', 'pending')
+      .limit(limit);
+    return data || [];
   }
 
-  updateDeliveryAttempt(queueId, status, nextAttemptAt) {
-    runExec(
-      'UPDATE delivery_queue SET status = ?, attempts = attempts + 1, next_attempt_at = ? WHERE id = ?',
-      [status, nextAttemptAt, queueId]
-    );
+  async updateDeliveryAttempt(queueId, status, nextAttemptAt) {
+    const client = getSupabaseClient();
+    const now = new Date().toISOString();
+    await client.from('alert_deliveries').update({
+      status: status,
+      updated_at: now
+    }).eq('id', queueId);
   }
 }

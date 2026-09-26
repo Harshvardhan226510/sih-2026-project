@@ -7,7 +7,8 @@ import { getVapidPublicKey as vapidKey, getPushStats } from '../services/webPush
 import { getMqttStatus } from '../services/mqttService.js';
 import { reverseGeocode } from '../services/location.js';
 import { WeatherProvider } from '../providers/base.js';
-import { runExec } from '../db/connection.js';
+import { getSupabaseClient } from '../db/supabaseClient.js';
+import logger from '../utils/logger.js';
 
 class MockCapProvider extends WeatherProvider {
   constructor(alerts) {
@@ -20,9 +21,10 @@ class MockCapProvider extends WeatherProvider {
 }
 const repo = new AlertRepository();
 const pushRepo = new PushRepository();
-export function listAlerts(req, res) {
+
+export async function listAlerts(req, res) {
   const { severity, event, area, status, page, limit, updatedSince } = req.query;
-  const result = repo.getAll({
+  const result = await repo.getAll({
     severity, event, area, status,
     page: parseInt(page) || 1,
     limit: Math.min(parseInt(limit) || 50, 100),
@@ -33,28 +35,33 @@ export function listAlerts(req, res) {
   res.set('ETag', etag);
   res.json(result);
 }
-export function getAlert(req, res) {
-  const alert = repo.getById(req.params.id);
+
+export async function getAlert(req, res) {
+  const alert = await repo.getById(req.params.id);
   if (!alert) return res.status(404).json({ error: 'Alert not found' });
   const etag = `"alert-${alert.id}-${alert.updatedAt}"`;
   if (req.headers['if-none-match'] === etag) return res.status(304).end();
   res.set('ETag', etag);
   res.json(alert);
 }
-export function getAlertHistory(req, res) {
-  const history = repo.getAlertHistory(req.params.id);
+
+export async function getAlertHistory(req, res) {
+  const history = await repo.getAlertHistory(req.params.id);
   if (!history || history.length === 0) return res.status(404).json({ error: 'Alert not found or no history' });
   res.json(history);
 }
+
 export async function syncAlerts(req, res) {
   const since = parseInt(req.query.since);
   if (isNaN(since)) return res.status(400).json({ error: 'since parameter required' });
   const { state, district, networkProfile, deviceId } = req.query;
-  const data = getSyncData(since, { state, district, networkProfile });
+  
+  // getSyncData uses repo, so we need to await it
+  const data = await repo.getSyncData(since, { state, district, networkProfile });
   
   if (deviceId) {
     const deliveryRepo = new (await import('../repositories/deliveryRepository.js')).DeliveryRepository();
-    const pending = deliveryRepo.getPendingAlerts(deviceId);
+    const pending = await deliveryRepo.getPendingAlerts(deviceId);
     data.pendingDeliveries = pending;
   }
 
@@ -63,30 +70,34 @@ export async function syncAlerts(req, res) {
   res.set('ETag', etag);
   res.json(data);
 }
-export function bootstrapAlerts(req, res) {
-  const data = getBootstrapData();
+
+export async function bootstrapAlerts(req, res) {
+  const data = await repo.getBootstrapData();
   res.json(data);
 }
-export function alertSummary(req, res) {
-  const summary = repo.getSummary();
+
+export async function alertSummary(req, res) {
+  const summary = await repo.getSummary();
   const etag = `"summary-${summary.revision}"`;
   if (req.headers['if-none-match'] === etag) return res.status(304).end();
   res.set('ETag', etag);
   res.json(summary);
 }
+
 export async function healthCheck(req, res) {
-  const imdStatus = repo.getProviderStatus('imd');
-  const activeCount = repo.getSummary().total;
-  const allAlerts = repo.getAll({ limit: 1000 });
+  const imdStatus = await repo.getProviderStatus('imd');
+  const summary = await repo.getSummary();
+  const activeCount = summary.total;
+  const allAlerts = await repo.getAll({ limit: 1000 });
   const expiredCount = allAlerts.alerts.filter(a => a.status === 'EXPIRED').length;
   const imdHealthy = imdStatus && imdStatus.consecutive_failures === 0;
-  const pushStats = getPushStats();
+  const pushStats = await getPushStats();
   const mqttStatus = getMqttStatus();
   res.json({
     status: 'ok',
     uptime: process.uptime(),
-    revision: repo.getCurrentRevision(),
-    database: { status: 'ok', type: 'sqlite' },
+    revision: await repo.getCurrentRevision(),
+    database: { status: 'ok', type: 'supabase' },
     ingestion: { enabled: (await import('../config/index.js')).default.ingestion.enabled },
     imd: {
       status: imdHealthy ? 'healthy' : (imdStatus ? 'degraded' : 'unknown'),
@@ -104,7 +115,6 @@ export async function healthCheck(req, res) {
       topic: mqttStatus.topic,
       lastMessageAt: mqttStatus.lastMessageAt,
       messageCount: mqttStatus.messageCount,
-      // brokerUrl is safe to expose; credentials (username/password) are never included
       brokerUrl: mqttStatus.brokerUrl,
     },
     push: {
@@ -115,6 +125,7 @@ export async function healthCheck(req, res) {
     },
   });
 }
+
 export async function triggerIngestion(req, res) {
   const startTime = new Date().toISOString();
   try {
@@ -150,14 +161,20 @@ export async function injectTestAlerts(req, res) {
   }
 }
 
-export function cleanupTestAlerts(req, res) {
+export async function cleanupTestAlerts(req, res) {
   try {
-    const delRevs = runExec("DELETE FROM alert_revisions WHERE alert_id IN (SELECT id FROM alerts WHERE id LIKE '%test-%' OR source_id LIKE 'test-%')");
-    const delAlerts = runExec("DELETE FROM alerts WHERE id LIKE '%test-%' OR source_id LIKE 'test-%'");
+    const client = getSupabaseClient();
+    // Delete from Supabase. Revisions and other dependencies cascade deleted.
+    const { data: alerts, error: err1 } = await client.from('alerts').select('id').or("id.ilike.%test-%,source_id.ilike.test-%");
+    const ids = alerts ? alerts.map(a => a.id) : [];
+    
+    if (ids.length > 0) {
+       await client.from('alerts').delete().in('id', ids);
+    }
+    
     res.json({
       status: 'ok',
-      cleanedRevisions: delRevs.changes,
-      cleanedAlerts: delAlerts.changes
+      cleanedAlerts: ids.length
     });
   } catch (err) {
     logger.error({ err: err.message }, 'Failed to cleanup test alerts');
@@ -171,7 +188,7 @@ export async function registerDevice(req, res) {
   
   try {
     const deliveryRepo = new (await import('../repositories/deliveryRepository.js')).DeliveryRepository();
-    deliveryRepo.registerDevice(deviceId, state || null, district || null);
+    await deliveryRepo.registerDevice(deviceId, state || null, district || null);
     res.json({ status: 'ok', deviceId });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -189,12 +206,9 @@ export async function updateLocation(req, res) {
   try {
     const { state, district } = await reverseGeocode(latitude, longitude);
     
-    // Register or update device with new location
     const deliveryRepo = new (await import('../repositories/deliveryRepository.js')).DeliveryRepository();
-    deliveryRepo.registerDevice(deviceId, state, district);
-
-    // If the device has a push subscription, update its target location
-    pushRepo.updateLocation(deviceId, state, district);
+    await deliveryRepo.registerDevice(deviceId, state, district);
+    await pushRepo.updateLocation(deviceId, state, district);
 
     res.json({ status: 'ok', state, district, accuracy });
   } catch (err) {
@@ -208,23 +222,13 @@ export async function acknowledgeAlert(req, res) {
   
   try {
     const deliveryRepo = new (await import('../repositories/deliveryRepository.js')).DeliveryRepository();
-    deliveryRepo.acknowledgeAlert(deviceId, alertId);
+    await deliveryRepo.acknowledgeAlert(deviceId, alertId);
     res.json({ status: 'ok', alertId });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
 
-/**
- * POST /api/push/subscribe
- * Registers or updates a Web Push subscription for a device.
- * Associates the subscription with a state/district for location-targeted alerts.
- *
- * Body: { deviceId, subscription: { endpoint, keys: { p256dh, auth } }, state?, district? }
- *
- * Security: Only stores endpoint and client keys (p256dh, auth).
- * VAPID private key is never involved in this handler.
- */
 export async function subscribePush(req, res) {
   const { deviceId, subscription, state, district } = req.body;
   if (!deviceId) return res.status(400).json({ error: 'deviceId required' });
@@ -233,11 +237,10 @@ export async function subscribePush(req, res) {
   }
 
   try {
-    // Also ensure device is registered in devices table
     const deliveryRepo = new (await import('../repositories/deliveryRepository.js')).DeliveryRepository();
-    deliveryRepo.registerDevice(deviceId, state || null, district || null);
+    await deliveryRepo.registerDevice(deviceId, state || null, district || null);
 
-    pushRepo.upsert(
+    await pushRepo.upsert(
       deviceId,
       subscription.endpoint,
       subscription.keys.p256dh,
@@ -251,27 +254,17 @@ export async function subscribePush(req, res) {
   }
 }
 
-/**
- * DELETE /api/push/subscribe
- * Removes a push subscription.
- * Body: { endpoint }
- */
 export async function unsubscribePush(req, res) {
   const { endpoint } = req.body;
   if (!endpoint) return res.status(400).json({ error: 'endpoint required' });
   try {
-    pushRepo.remove(endpoint);
+    await pushRepo.remove(endpoint);
     res.json({ status: 'ok' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
 
-/**
- * GET /api/push/vapid-public-key
- * Returns only the VAPID public key for the browser to use when subscribing.
- * The VAPID private key is NEVER returned here or anywhere in the API.
- */
 export function getVapidPublicKey(req, res) {
   const key = vapidKey();
   if (!key) {

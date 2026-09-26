@@ -17,14 +17,8 @@
  *
  * AVAILABILITY CONTRACT
  * ─────────────────────
- * Returns null when SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is missing.
- * Callers must guard:
- *
- *   const client = getSupabaseClient();
- *   if (!client) { return; }  // sync silently skipped
- *
- * This keeps the local Alerts pipeline functioning normally in environments
- * where Supabase credentials have not been configured.
+ * Throws a structured error if SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is missing,
+ * as Supabase is now the authoritative source of truth.
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -34,54 +28,45 @@ import logger from '../utils/logger.js';
 let _client = null;
 let _initialized = false;
 
-/**
- * Returns the Supabase service-role client, or null if not configured.
- *
- * Initialised lazily on first call so that missing credentials do not cause
- * a startup crash — they simply disable Supabase sync.
- *
- * @returns {import('@supabase/supabase-js').SupabaseClient | null}
- */
 export function getSupabaseClient() {
-  if (_initialized) return _client;
-  _initialized = true;
-
+  if (_initialized && _client) return _client;
+  
   const { url, serviceRoleKey } = config.supabase;
 
   if (!url || !serviceRoleKey) {
-    logger.warn(
-      'supabase_sync: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set — ' +
-      'Supabase sync is disabled. Local alerts pipeline is unaffected.'
+    const missing = [];
+    if (!url) missing.push('SUPABASE_URL');
+    if (!serviceRoleKey) missing.push('SUPABASE_SERVICE_ROLE_KEY');
+    
+    logger.error(
+      `supabase_client: Missing required server configuration: ${missing.join(', ')}`
     );
-    _client = null;
-    return null;
+    
+    const err = new Error(`Missing required server environment variables: ${missing.join(', ')}`);
+    err.status = 503;
+    err.isConfigError = true;
+    err.missingVars = missing;
+    throw err;
   }
 
   try {
     _client = createClient(url, serviceRoleKey, {
       auth: {
-        // Disable auto-refresh token — we are running as a server process
-        // with a static service-role key, not as an interactive user session.
         autoRefreshToken: false,
         persistSession: false,
         detectSessionInUrl: false,
       },
     });
-    logger.info('supabase_sync: Supabase client initialised');
+    _initialized = true;
+    logger.info('supabase_client: Supabase client initialised');
   } catch (err) {
-    logger.error({ err: err.message }, 'supabase_sync: failed to create Supabase client');
-    _client = null;
+    logger.error({ err: err.message }, 'supabase_client: failed to create Supabase client');
+    throw err;
   }
 
   return _client;
 }
 
-/**
- * Reset the singleton — used only by tests to allow re-initialisation with
- * different config values without restarting the process.
- *
- * @internal
- */
 export function _resetSupabaseClient() {
   _client = null;
   _initialized = false;

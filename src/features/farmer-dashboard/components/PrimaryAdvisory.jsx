@@ -1,79 +1,70 @@
 import React from 'react';
-import { SmartAdvisories } from './SmartAdvisories';
 
-export function PrimaryAdvisory({ data, activeCrop, advice, day, setDay, text, language, setActiveCrop, setSearch }) {
-  const currentDay = data.forecast[day] || data.forecast[0];
+export function PrimaryAdvisory({ decisionState, place, data, language }) {
+  if (!decisionState || !decisionState.primary) return null;
+  const primary = decisionState.primary;
+  
+  const isHi = language === 'hi';
+  const isMr = language === 'mr';
+
+  const titleText = isHi ? 'आज का कृषि निर्णय' : isMr ? 'आजचा शेती निर्णय' : 'FARM TODAY';
+  
+  // Icon based on severity
+  const icon = primary.severity === 'HIGH' ? '⚠️' : primary.severity === 'MODERATE' ? '👀' : '✅';
+  const color = primary.severity === 'HIGH' ? '#dc2626' : primary.severity === 'MODERATE' ? '#d97706' : '#16a34a';
+  const bg = primary.severity === 'HIGH' ? '#fef2f2' : primary.severity === 'MODERATE' ? '#fffbeb' : '#f0fdf4';
+  const border = primary.severity === 'HIGH' ? '#fca5a5' : primary.severity === 'MODERATE' ? '#fcd34d' : '#86efac';
 
   return (
-    <section className="primary">
-      <div className="pill">{text.advisory}</div>
-      <h1>{activeCrop ? `${activeCrop.name}: ${advice.verdict}` : advice.verdict}</h1>
-      <div className="simple-guide">
-        <article>
-          <span>✓</span>
-          <div>
-            <b>{text.now}</b>
-            <p>{advice.action}</p>
-          </div>
-        </article>
-        <article>
-          <span>?</span>
-          <div>
-            <b>{text.why}</b>
-            <p>{advice.reason}</p>
-          </div>
-        </article>
-        <article>
-          <span>!</span>
-          <div>
-            <b>{text.avoid}</b>
-            <p>
-              {language === 'en'
-                ? 'Do not spray before rain or in strong wind.'
-                : language === 'hi'
-                  ? 'बारिश या तेज हवा से पहले छिड़काव न करें।'
-                  : 'पावसापूर्वी किंवा जोराच्या वाऱ्यात फवारणी करू नका.'}
-            </p>
-          </div>
-        </article>
-      </div>
-
-      <div className="forecast">
-        <svg viewBox="0 0 700 150" preserveAspectRatio="none">
-          <path d="M0 110 C70 95 80 120 150 92 S250 70 300 98 S390 128 450 78 S550 50 600 82 S650 110 700 65" />
-        </svg>
-        <div className="forecast-points">
-          {data.forecast.map((x, i) => (
-            <button
-              key={`${x.day}-${i}`}
-              onClick={() => setDay(i)}
-              className={day === i ? 'selected' : ''}
-            >
-              <b>{x.temperature}°</b>
-              <span>{x.icon}</span>
-            </button>
-          ))}
+    <section className="primary-decision" style={{ 
+      background: '#fff', 
+      borderRadius: '12px', 
+      padding: '24px', 
+      border: '1px solid #e2e8f0',
+      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#64748b', letterSpacing: '0.05em' }}>
+          {titleText}
+        </div>
+        <div style={{ fontSize: '12px', color: '#94a3b8' }}>
+          {place?.name} • Updated {new Date(data?.syncedAt || Date.now()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
         </div>
       </div>
 
-      <div className="days">
-        {data.forecast.map((x, i) => (
-          <button
-            onClick={() => setDay(i)}
-            className={day === i ? 'active' : ''}
-            key={`${x.day}-${i}`}
-          >
-            {x.day}
-          </button>
-        ))}
+      <div style={{ 
+        background: bg, 
+        border: `1px solid ${border}`, 
+        borderRadius: '8px', 
+        padding: '20px',
+        marginBottom: '16px'
+      }}>
+        <h2 style={{ color, margin: '0 0 12px 0', fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span>{icon}</span> {primary.status}
+        </h2>
+        
+        <p style={{ fontSize: '16px', color: '#1e293b', fontWeight: '500', margin: '0 0 16px 0' }}>
+          {primary.reason}
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '14px' }}>
+          <div>
+            <div style={{ color: '#64748b', marginBottom: '4px', fontSize: '12px', textTransform: 'uppercase' }}>Evidence</div>
+            <div style={{ color: '#334155' }}>{primary.evidence}</div>
+          </div>
+          <div>
+            <div style={{ color: '#64748b', marginBottom: '4px', fontSize: '12px', textTransform: 'uppercase' }}>Confidence</div>
+            <div style={{ color: '#334155', fontWeight: '500' }}>{primary.confidence}</div>
+          </div>
+        </div>
+
+        {primary.timing && (
+          <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: `1px dashed ${border}` }}>
+            <div style={{ color: '#64748b', marginBottom: '4px', fontSize: '12px', textTransform: 'uppercase' }}>Potentially better period</div>
+            <div style={{ color: '#0f172a', fontWeight: 'bold' }}>{primary.timing}</div>
+          </div>
+        )}
       </div>
-
-      <p className="selection">
-        {text.forecast} {currentDay.day}, {currentDay.temperature}°C · {text.rain}:{' '}
-        {currentDay.rainProbability ?? '—'}%
-      </p>
-
-      <SmartAdvisories language={language} />
     </section>
   );
 }

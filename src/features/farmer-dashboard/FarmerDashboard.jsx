@@ -6,8 +6,13 @@ import { LocationSearch } from './components/LocationSearch';
 import { AddCrop } from './components/AddCrop';
 import { PrimaryAdvisory } from './components/PrimaryAdvisory';
 import { Sidebar } from './components/Sidebar';
-import { LanguageSidebar } from './components/LanguageSidebar';
+import { MandiSchemes } from './components/MandiSchemes';
+import { SevenDayPlanner } from './components/SevenDayPlanner';
+import { FarmerAlerts } from './components/FarmerAlerts';
+import { FarmActionsSummary } from './components/FarmActionsSummary';
 import { copy, localAdvice, fallbackPlaces } from './utils/i18n';
+import { supabase } from '../../shared/lib/supabaseClient';
+import { generateAdvisories } from './utils/advisoryEngine';
 
 
 const start = { name: 'Nashik, Maharashtra', latitude: 19.9975, longitude: 73.7898 };
@@ -27,7 +32,6 @@ export function FarmerDashboard() {
   
   const [message, setMessage] = useState('');
   const [add, setAdd] = useState(false);
-  const [crop, setCrop] = useState('Wheat');
   const [language, setLanguage] = useState(() => localStorage.getItem('weathergpt-language') || 'en');
   const [loading, setLoading] = useState(!data);
 
@@ -132,16 +136,44 @@ export function FarmerDashboard() {
     setQ('');
   }
 
-  function addCropForm(e) {
-    e.preventDefault();
+  async function addCropForm({ name, sowingDate, stage }) {
     const next = {
-      name: crop,
-      stage: 'Stage not recorded',
+      name,
+      stage: stage || 'Stage not recorded',
+      sowingDate: sowingDate || null,
       status: 'Review advisory',
       urgency: 'Low',
       icon: '⌁'
     };
-    setData((d) => ({ ...d, crops: [next, ...(d?.crops || [])] }));
+    
+    // Try to save to backend if authenticated
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session?.access_token) {
+         await fetch('/api/farmer/crops', {
+           method: 'POST',
+           headers: {
+             'Content-Type': 'application/json',
+             'Authorization': `Bearer ${sessionData.session.access_token}`
+           },
+           body: JSON.stringify({
+             cropId: name.toLowerCase(),
+             locationId: place.name,
+             sowingDate: next.sowingDate,
+             growthStage: next.stage,
+             isPrimary: false
+           })
+         });
+      }
+    } catch (e) {
+      console.log('Failed to save to backend, falling back to local storage', e);
+    }
+
+    setData((d) => {
+      const updated = { ...d, crops: [next, ...(d?.crops || [])] };
+      localStorage.setItem('weathergpt-dashboard', JSON.stringify(updated));
+      return updated;
+    });
     setActiveCrop(next);
     setAdd(false);
   }
@@ -182,12 +214,12 @@ export function FarmerDashboard() {
   }
 
   const text = copy[language];
-  const advice = localAdvice(data.advisory, language);
+  const decisionState = data ? generateAdvisories(data, activeCrop, language) : null;
 
   return (
-    <main className="page-shell">
+    <main className="page-shell" style={{ background: '#f1f5f9', minHeight: '100vh', paddingBottom: '40px' }}>
       <div className="atmosphere" />
-      <section className="dashboard">
+      <section className="dashboard" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
         <div className="content">
           <Header
             data={data}
@@ -211,48 +243,50 @@ export function FarmerDashboard() {
           />
           <AddCrop
             add={add}
-            crop={crop}
-            setCrop={setCrop}
             addCrop={addCropForm}
             language={language}
             text={text}
           />
 
           {offline && (
-            <div className="offline">
-              No internet right now. Your last saved farm advice is still available.
+            <div className="offline" style={{ background: '#f59e0b', color: '#fff', padding: '12px', borderRadius: '8px', marginBottom: '20px', textAlign: 'center', fontWeight: 'bold' }}>
+              Showing cached weather from {new Date(data.syncedAt).toLocaleString()}. Network is offline.
             </div>
           )}
 
-          <div className="layout">
-            <PrimaryAdvisory
-              data={data}
-              activeCrop={activeCrop}
-              advice={advice}
-              day={day}
-              setDay={setDay}
-              text={text}
-              language={language}
-              setActiveCrop={setActiveCrop}
-              setSearch={setSearch}
-            />
-            <div>
+          {/* Desktop Grid Layout */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+            
+            {/* Left Column: Primary Decision */}
+            <div style={{ gridColumn: '1 / span 2', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <PrimaryAdvisory
+                decisionState={decisionState}
+                place={place}
+                data={data}
+                language={language}
+              />
+              <FarmActionsSummary decisionState={decisionState} language={language} />
+            </div>
+
+            {/* Right Column: Context */}
+            <div style={{ gridColumn: 'span 1' }}>
               <Sidebar
                 data={data}
-                text={text}
                 activeCrop={activeCrop}
                 setActiveCrop={setActiveCrop}
                 setSearch={setSearch}
+                decisionState={decisionState}
               />
-              <div style={{ marginTop: '26px' }}>
-                <LanguageSidebar language={language} setLanguage={setLanguage} />
-              </div>
             </div>
+
           </div>
 
-          <footer>
-            {data.isDemo ? text.demo : `Last synced ${new Date(data.syncedAt).toLocaleString()}`}
-          </footer>
+          <FarmerAlerts place={place} language={language} />
+
+          <SevenDayPlanner data={data} language={language} activeCrop={activeCrop} />
+
+          <MandiSchemes data={data} language={language} />
+
         </div>
       </section>
     </main>
